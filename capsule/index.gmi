@@ -1,0 +1,10 @@
+# My capsule
+
+Welcome to my gemini capsule
+
+### Here is a list
+* item 1
+* item 2
+* item 3
+
+=> gemini://localhost/second.gmi    My second page
