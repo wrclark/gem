@@ -8,8 +8,10 @@
 #define RESP_STATUS_PERMFAIL  50
 #define RESP_STATUS_CERT      60
 
+#include <openssl/ssl.h>
 #include "request.h"
 
-int resp_resource_exists(struct resource *r);
+int resp_file_exists(struct resource *res);
+int resp_file_transfer(struct resource *res, SSL *ssl);
 
 #endif

@@ -1,8 +1,14 @@
+#include <openssl/ssl.h>
 #include "response.h"
+#include "mime.h"
 
-extern const char *docroot;
+/* determine if the file exists within the docroot */
+int resp_file_exists(struct resource *res) {
+    return 0;
+}
 
-/* check if a resource requested actually exists in the docroot */
-int resp_resource_exists(struct resource *r) {
+/* attempt to (in chunks*) transfer the requested file */
+int resp_file_transfer(struct resource *res, SSL *ssl) {
+    /* determine mime type here */
     return 0;
 }

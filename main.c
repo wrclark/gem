@@ -10,9 +10,11 @@
 
 #include "config.h"
 #include "request.h"
+#include "response.h"
 
 const char *response = "20 text/gemini\r\n#Hello\n*Good morning\n*Sir\n";
-const char *bad = "40 text/gemini\r\nBad request\n";
+const char *tempfail = "40 text/plain\r\nBad request\n";
+const char *permfail = "50 text/plain\r\nFile not found\n";
 
 
 int main(int argc, char *argv[]) {
@@ -31,7 +33,7 @@ int main(int argc, char *argv[]) {
     }
 
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(1965);
+    addr.sin_port = htons(GEM_PORT);
     addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(fd, (struct sockaddr *)&addr, sizeof addr) < 0) {
@@ -61,18 +63,37 @@ int main(int argc, char *argv[]) {
 
             printf("data received: %s\n", req->data);
 
-
             /* if the request is 'invalid' .. */
             if ((err = req_valid(req))) {
-                SSL_write(ssl, bad, strlen(bad));
+                SSL_write(ssl, tempfail, strlen(tempfail));
                 printf("invalid request! E=%d\n", err);
                 goto CLOSE_CONNECTION;
             }
 
             /* if the resource requested is bad */
             if ((err = req_resource(req, res))) {
-                SSL_write(ssl, bad, strlen(bad));
+                SSL_write(ssl, tempfail, strlen(tempfail));
                 printf("invalid resource! E=%d\n", err);
+                goto CLOSE_CONNECTION;
+            }
+
+            /* 1. check if resource exists 
+             * 2. if no, send gemini 404 and die
+             * 3.1 send 20 and mime type determimnned by the the extension
+             * 3.2 start sending the file
+             * 3.3 die
+             */
+
+            /* file does not exist */
+            if (resp_file_exists(res)) {
+                SSL_write(ssl, permfail, strlen(permfail));
+                printf("file does not exist: %s\n", res->data);
+                goto CLOSE_CONNECTION;
+            }
+
+            /* file transfer failed */
+            if (resp_file_transfer(res, ssl)) {
+                SSL_write(ssl, tempfail, strlen(tempfail));
                 goto CLOSE_CONNECTION;
             }
 

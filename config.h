@@ -5,6 +5,9 @@
 #define PUBLIC_KEY "tls/server.crt"
 #define PRIVATE_KEY "tls/server.key"
 
+/* default gemini port */
+#define GEM_PORT 1965
+
 /* change to example.com */
 #define GEM_HOSTNAME "localhost"
 
