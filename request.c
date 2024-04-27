@@ -1,28 +1,28 @@
 #include "request.h"
+#include "config.h"
+
 #include <string.h>
 
-/* "example.com" */
-extern const char *hostname;
-
 /* check if a request string is valid.
- * starts with "gemini://"$HOSTNAME
- * and the final 2 characters are CR LF, like in http */
+ * starts with gemini://$HOSTNAME/(.*)
+ * and the final 2 characters are CR LF, like in http
+ * TODO: ignore conf'd hostname on local ip ranges */
 int req_valid(struct request *req) {
 
-    if (req->size < 9 + strlen(hostname) + 2) {
+    if (req->size < 9 + strlen(GEM_HOSTNAME) + 2) {
         return 1;
     }
 
     if (strncmp(req->data, "gemini://", 9)) {
-        return 1;
+        return 2;
     }
 
-    if (strncmp(req->data + 9, hostname, strlen(hostname))) {
-        return 1;
+    if (strncmp(req->data + 9, GEM_HOSTNAME, strlen(GEM_HOSTNAME))) {
+        return 3;
     }
 
     if (strncmp(&(req->data[req->size - 2]), "\r\n", 2)) {
-        return 1;
+        return 4;
     }
 
     return 0;
@@ -32,7 +32,7 @@ int req_valid(struct request *req) {
 int req_resource(struct request *req, struct resource *r) {
     char *p;
 
-    strcpy(r->data, req->data + strlen(hostname) + 9);
+    strcpy(r->data, req->data + strlen(GEM_HOSTNAME) + 9);
     r->size = strlen(r->data);
 
     p = &(r->data[r->size - 1]);

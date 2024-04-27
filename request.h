@@ -2,7 +2,7 @@
 #define REQUEST_H
 
 struct request {
-    char data[1024];
+    char data[1025];
     unsigned int size;
 };
 
