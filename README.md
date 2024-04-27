@@ -6,6 +6,7 @@ Make changes to `config.h`
 
 How to run:
 ```sh
+$ sudo apt install libssl-dev
 $ make ssl
 $ make
 $ ./gem

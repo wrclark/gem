@@ -1,6 +1,9 @@
 #ifndef MIME_H
 #define MIME_H
 
-const char *mime_type_by_ext(const char *ext);
+#include "response.h"
+
+char *mime_type_by_ext(char *ext);
+char *mime_type(struct resource *res);
 
 #endif

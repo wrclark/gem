@@ -12,7 +12,7 @@
 #define GEM_HOSTNAME "localhost"
 
 /* directory from which the .gmi files are served */
-/* like /var/www/ */
-#define GEM_DOCROOT "capsule/"
+/* like /var/www */
+#define GEM_DOCROOT "capsule"
 
 #endif

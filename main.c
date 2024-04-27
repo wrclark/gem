@@ -26,6 +26,9 @@ int main(int argc, char *argv[]) {
     struct request *req;
     struct resource *res;
 
+    (void) argc;
+    (void) argv;
+
     fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) {
         perror("socket()");
@@ -77,13 +80,6 @@ int main(int argc, char *argv[]) {
                 goto CLOSE_CONNECTION;
             }
 
-            /* 1. check if resource exists 
-             * 2. if no, send gemini 404 and die
-             * 3.1 send 20 and mime type determimnned by the the extension
-             * 3.2 start sending the file
-             * 3.3 die
-             */
-
             /* file does not exist */
             if (resp_file_exists(res)) {
                 SSL_write(ssl, permfail, strlen(permfail));
@@ -91,14 +87,16 @@ int main(int argc, char *argv[]) {
                 goto CLOSE_CONNECTION;
             }
 
+            printf("file exists !! : %s\n", res->data);
+
             /* file transfer failed */
             if (resp_file_transfer(res, ssl)) {
+                puts("file transfer failed");
                 SSL_write(ssl, tempfail, strlen(tempfail));
                 goto CLOSE_CONNECTION;
             }
 
             printf("resource requested: %s\n", res->data);
-            SSL_write(ssl, response, strlen(response));
 
 CLOSE_CONNECTION:
             free(req);

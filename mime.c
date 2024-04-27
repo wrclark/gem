@@ -1,8 +1,10 @@
 #include "mime.h"
+#include "request.h"
 #include <string.h>
 
 /* maybe this should be a has map */
-const char *mime_type_by_ext(const char *ext) {
+char *mime_type_by_ext(char *ext) {
+    printf("ext received: %s\n", ext);
     if (!strcmp(ext, "gmi")) {
         return "text/gemini";
     }
@@ -193,4 +195,37 @@ const char *mime_type_by_ext(const char *ext) {
 
 
     return "application/octet-stream";
+}
+
+/* takes a resource string and finds the corresponding */
+/* mime type for its extension */
+/* NULL on error */
+char *mime_type(struct resource *res) {
+    int length, i, ext;
+    /* if no extension has been detected by this much */
+    /* then treat it as a bin (application/octet-stream) */
+    char buf[16] = {0};
+
+    if (!res) {
+        return NULL;
+    }
+
+    length = strlen(res->data);
+
+    for(i=length; i > (length-16); i--) {
+        if (res->data[i] == '.') {
+            break;
+        }
+    }
+
+    if (i == (length - 16)) {
+        return mime_type_by_ext(NULL);
+    }
+
+    ext = i + 1;
+    for(i=ext; i<length; i++) {
+        buf[i-ext] = res->data[i];
+    }
+
+    return mime_type_by_ext(buf);
 }

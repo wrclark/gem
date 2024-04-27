@@ -2,6 +2,15 @@
 
 Welcome to my gemini capsule
 
+```Cool art
+  ▄▀  ▄███▄   █▀▄▀█ ▄█    ▄   ▄█ 
+▄▀    █▀   ▀  █ █ █ ██     █  ██ 
+█ ▀▄  ██▄▄    █ ▄ █ ██ ██   █ ██ 
+█   █ █▄   ▄▀ █   █ ▐█ █ █  █ ▐█ 
+ ███  ▀███▀      █   ▐ █  █ █  ▐ 
+                ▀      █   ██    
+```
+
 ### Here is a list
 * item 1
 * item 2

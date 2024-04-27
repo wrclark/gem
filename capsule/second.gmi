@@ -1,3 +1,6 @@
 # second page
 
-## good morning sir
+## enjoy this photo of a dog
+### the dog
+
+=> gemini://localhost/dog.png    a dog
