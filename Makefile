@@ -10,11 +10,7 @@ all:
 
 ssl:
 	mkdir -p tls
-	openssl genrsa -aes256 -passout pass:gemini123 -out tls/server.pass.key 4096
-	openssl rsa -passin pass:gemini123 -in tls/server.pass.key -out tls/server.key
-	@rm tls/server.pass.key
-	openssl req -new -key tls/server.key -out tls/server.csr
-	openssl x509 -req -sha256 -days 3650 -in tls/server.csr -signkey tls/server.key -out tls/server.crt
+	openssl req -x509 -newkey rsa:4096 -keyout tls/server.key -out tls/server.crt -sha256 -days 3650 -nodes -subj '/CN=localhost'
 
-
-
+clean:
+	rm -rf $(BIN) tls/
