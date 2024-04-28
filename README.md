@@ -16,3 +16,8 @@ Test gemini client:
 ```sh
 echo "gemini://localhost" | openssl s_client -quiet -crlf -connect localhost:1965
 ```
+
+Great development tool:
+```
+https://github.com/michael-lazar/gemini-diagnostics
+```

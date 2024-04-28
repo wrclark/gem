@@ -12,11 +12,6 @@
 #include "request.h"
 #include "response.h"
 
-const char *response = "20 text/gemini\r\n#Hello\n*Good morning\n*Sir\n";
-const char *tempfail = "40 text/plain\r\nBad request\n";
-const char *permfail = "50 text/plain\r\nFile not found\n";
-
-
 int main(int argc, char *argv[]) {
     SSL_CTX *ctx;
     SSL *ssl;
@@ -75,7 +70,11 @@ int main(int argc, char *argv[]) {
 
             /* if the request is 'invalid' .. */
             if ((err = req_valid(req))) {
-                SSL_write(ssl, tempfail, strlen(tempfail));
+                if (err == 10) {
+                    resp_error(RESP_STATUS_PROXY_REFUSED, ssl);
+                } else {
+                    resp_error(RESP_STATUS_BAD_REQUEST, ssl);
+                }
                 printf("invalid request! E=%d\n", err);
                 goto CLOSE_CONNECTION;
             }
@@ -84,7 +83,7 @@ int main(int argc, char *argv[]) {
 
             /* if the resource requested is bad */
             if ((err = req_resource(req, res))) {
-                SSL_write(ssl, tempfail, strlen(tempfail));
+                resp_error(RESP_STATUS_PERMFAIL, ssl);
                 printf("invalid resource! E=%d\n", err);
                 goto CLOSE_CONNECTION;
             }
@@ -103,7 +102,7 @@ int main(int argc, char *argv[]) {
 
             /* file does not exist */
             if (resp_file_exists(res)) {
-                SSL_write(ssl, permfail, strlen(permfail));
+                resp_error(RESP_STATUS_NOT_FOUND, ssl);
                 printf("file does not exist: %s\n", res->data);
                 goto CLOSE_CONNECTION;
             }
@@ -113,7 +112,6 @@ int main(int argc, char *argv[]) {
             /* file transfer failed */
             if (resp_file_transfer(res, ssl)) {
                 puts("file transfer failed");
-                SSL_write(ssl, tempfail, strlen(tempfail));
                 goto CLOSE_CONNECTION;
             }
 

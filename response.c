@@ -82,3 +82,9 @@ int resp_redirect(const char *path, SSL *ssl) {
 
     return 0;
 }
+
+int resp_error(const char *code, SSL *ssl) {
+    SSL_write(ssl, code, strlen(code));
+    SSL_write(ssl, "\r\n", 2);
+    return 0;
+}
