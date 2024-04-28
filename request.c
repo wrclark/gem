@@ -1,7 +1,8 @@
+#include <stdio.h>
+#include <string.h>
+
 #include "request.h"
 #include "config.h"
-
-#include <string.h>
 
 /* check if a request string is valid.
  * starts with gemini://$HOSTNAME/(.*)
@@ -55,7 +56,12 @@ int req_resource(struct request *req, struct resource *r) {
 
 /* links that end in a / should have that / replaced with */
 /* "/index.gmi" */
+/* if the RR is just "" then replace it with "/index.gmi" */
 int req_check_index(struct resource *r) {
+    if (r->size < 2) {
+        r->data[r->size++] = '/';
+    }
+
     if (r->data[r->size-1] == '/') {
         /* prob always fits */
         strcpy(&(r->data[r->size]), "index.gmi");

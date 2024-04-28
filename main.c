@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
     int err;
     struct request *req;
     struct resource *res;
+    int opt = 1;
 
     (void) argc;
     (void) argv;
@@ -32,6 +33,12 @@ int main(int argc, char *argv[]) {
     fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) {
         perror("socket()");
+        exit(1);
+    }
+
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof opt)) {
+        close(fd);
+        perror("setsockopt()");
         exit(1);
     }
 
@@ -73,6 +80,8 @@ int main(int argc, char *argv[]) {
                 goto CLOSE_CONNECTION;
             }
 
+            puts("request OK");
+
             /* if the resource requested is bad */
             if ((err = req_resource(req, res))) {
                 SSL_write(ssl, tempfail, strlen(tempfail));
@@ -80,19 +89,17 @@ int main(int argc, char *argv[]) {
                 goto CLOSE_CONNECTION;
             }
 
+            puts("resource OK");
+
             /* URIs ending in / should redirect to /index.gmi */
             /* eg gemini://example.com/cats/ -> /cats/index.gmi */
+            /* URI of "gemini://example.com" -> /index.gmi */
             if (req_check_index(res)) {
-                SSL_write(ssl, tempfail, strlen(tempfail));
-                goto CLOSE_CONNECTION;
+                resp_redirect("gemini://"GEM_HOSTNAME"/", ssl);
+                puts("redirected \"\" -> \"/\"");
             }
 
-            /* if the requested URI is "" then redirect to "/" */
-            if (res->size == 0) {
-                if (resp_redirect("/", ssl)) {
-                    goto CLOSE_CONNECTION;
-                }
-            }
+            puts("index OK");
 
             /* file does not exist */
             if (resp_file_exists(res)) {
