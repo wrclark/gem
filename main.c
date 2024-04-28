@@ -80,6 +80,13 @@ int main(int argc, char *argv[]) {
                 goto CLOSE_CONNECTION;
             }
 
+            /* URIs ending in / should redirect to /index.gmi */
+            /* eg gemini://example.com/cats/ -> /cats/index.gmi */
+            if (req_check_index(res)) {
+                SSL_write(ssl, tempfail, strlen(tempfail));
+                goto CLOSE_CONNECTION;
+            }
+
             /* file does not exist */
             if (resp_file_exists(res)) {
                 SSL_write(ssl, permfail, strlen(permfail));

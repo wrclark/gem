@@ -13,5 +13,6 @@ struct resource {
 
 int req_valid(struct request *);
 int req_resource(struct request *, struct resource *);
+int req_check_index(struct resource *); 
 
 #endif

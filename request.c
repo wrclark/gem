@@ -50,6 +50,17 @@ int req_resource(struct request *req, struct resource *r) {
         return 1;
     }
 
+    return 0;
+}
+
+/* links that end in a / should have that / replaced with */
+/* "/index.gmi" */
+int req_check_index(struct resource *r) {
+    if (r->data[r->size-1] == '/') {
+        /* prob always fits */
+        strcpy(&(r->data[r->size]), "index.gmi");
+        r->size += strlen("index.gmi");
+    }
 
     return 0;
 }
