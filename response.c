@@ -70,3 +70,15 @@ EXIT:
     fclose(f);
     return err;
 }
+
+/* redirect to PATH for whatever reason */
+int resp_redirect(const char *path, SSL *ssl) {
+    if (!path || !ssl) {
+        return 1;
+    }
+
+    SSL_write(ssl, "30 ", 3);
+    SSL_write(ssl, path, strlen(path));
+
+    return 0;
+}

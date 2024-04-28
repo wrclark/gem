@@ -13,5 +13,6 @@
 
 int resp_file_exists(struct resource *res);
 int resp_file_transfer(struct resource *res, SSL *ssl);
+int resp_redirect(const char *path, SSL *ssl);
 
 #endif

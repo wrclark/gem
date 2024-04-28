@@ -87,6 +87,13 @@ int main(int argc, char *argv[]) {
                 goto CLOSE_CONNECTION;
             }
 
+            /* if the requested URI is "" then redirect to "/" */
+            if (res->size == 0) {
+                if (resp_redirect("/", ssl)) {
+                    goto CLOSE_CONNECTION;
+                }
+            }
+
             /* file does not exist */
             if (resp_file_exists(res)) {
                 SSL_write(ssl, permfail, strlen(permfail));
