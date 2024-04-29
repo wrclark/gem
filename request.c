@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "request.h"
@@ -153,6 +154,12 @@ START:
         strcpy(u->path, buffer);
         break;
     }
+
+    /* scheme should never be empty */
+    if (!strlen(u->scheme)) u->error |= REQUEST_ERR_SCHEME;
+
+    /* domain should never be empty */
+    if (!strlen(u->domain)) u->error |= REQUEST_ERR_DOMAIN;
 }
 
 /* check path for "./" and "../" */
@@ -175,16 +182,22 @@ void request_validate_uri(struct gem_uri *u) {
 
     /* only allow scheme to be gemini */
     if (strncmp("gemini", u->scheme, REQUEST_MAX_SCHEME)) {
-        u->error |= REQUEST_ERR_SCHEME;
+        u->error |= REQUEST_ERR_WRONG_SCHEME;
         return;
     }
 
     /* only allow hostname */
     if (GEM_ONLY_HOSTNAME == 1) {
         if (strncmp(GEM_HOSTNAME, u->domain, REQUEST_MAX_DOMAIN)) {
-            u->error |= REQUEST_ERR_DOMAIN;
+            u->error |= REQUEST_ERR_WRONG_DOMAIN;
             return;
         }
+    }
+
+    /* only allow correct port */
+    if (strlen(u->port) > 0 && atoi(u->port) != GEM_PORT) {
+        u->error |= REQUEST_ERR_PORT;
+        return;
     }
 }
 

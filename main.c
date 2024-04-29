@@ -53,6 +53,9 @@ int main(int argc, char *argv[]) {
         client = accept(fd, NULL, NULL);
 
         if (!fork()) {
+            memset(buffer, 0, GEM_URI_MAXSIZ);
+            memset(&uri, 0, sizeof (uri));
+
             ctx = SSL_CTX_new(TLS_server_method());
             ssl = SSL_new(ctx);
             SSL_set_fd(ssl, client);
@@ -64,7 +67,6 @@ int main(int argc, char *argv[]) {
             SSL_read(ssl, buffer, GEM_URI_MAXSIZ);
 
             printf("\ndata received: %s\n", buffer);
-
             request_parse(buffer, &uri);
             request_print_uri(&uri);
 
@@ -75,10 +77,21 @@ int main(int argc, char *argv[]) {
             }
 
             request_validate_uri(&uri);
-            
+
             if (uri.error != 0) {
                 printf("(2) E=%d\n", uri.error);
-                resp_error(RESP_STATUS_BAD_REQUEST, ssl);
+                switch (uri.error) {
+                    case REQUEST_ERR_WRONG_SCHEME:
+                    case REQUEST_ERR_WRONG_DOMAIN:
+                    case REQUEST_ERR_PORT:
+                        resp_error(RESP_STATUS_PROXY_REFUSED, ssl);
+                    break;
+                    case REQUEST_ERR_PATH:
+                    case REQUEST_ERR_SCHEME:
+                    case REQUEST_ERR_DOMAIN:
+                        resp_error(RESP_STATUS_BAD_REQUEST, ssl);
+                    break;                  
+                }
                 goto CLOSE_CONNECTION;
             }
 
