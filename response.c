@@ -6,16 +6,16 @@
 #include "config.h"
 
 /* determine if the file exists within the docroot */
-int resp_file_exists(struct resource *res) {
+int resp_file_exists(struct gem_uri *u) {
     char buf[2048];
     struct stat st;
 
-    if (!res) {
+    if (!u) {
         return 1;
     }
 
     strcpy(buf, GEM_DOCROOT);
-    strncpy(buf + strlen(GEM_DOCROOT),  res->data, 2048 - strlen(GEM_DOCROOT));
+    strncpy(buf + strlen(GEM_DOCROOT),  u->path, 2048 - strlen(GEM_DOCROOT));
     
     printf("file exists=\"%s\"\n", buf);
 
@@ -24,7 +24,7 @@ int resp_file_exists(struct resource *res) {
 }
 
 /* attempt to (in chunks*) transfer the requested file */
-int resp_file_transfer(struct resource *res, SSL *ssl) {
+int resp_file_transfer(struct gem_uri *u, SSL *ssl) {
     char *mime;
     FILE *f;
     char buffer[2048] = {0};
@@ -34,13 +34,13 @@ int resp_file_transfer(struct resource *res, SSL *ssl) {
     err = 1;
 
     /* error */
-    mime = mime_type(res);
+    mime = mime_type(u);
     if (!mime) {
         puts("mime error");
         return 1;
     }
 
-    sprintf(buffer, "%s%s", GEM_DOCROOT, res->data);
+    sprintf(buffer, "%s%s", GEM_DOCROOT, u->path);
 
     f = fopen(buffer, "r");
     if (!f) {

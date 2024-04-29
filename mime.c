@@ -200,20 +200,20 @@ char *mime_type_by_ext(char *ext) {
 /* takes a resource string and finds the corresponding */
 /* mime type for its extension */
 /* NULL on error */
-char *mime_type(struct resource *res) {
+char *mime_type(struct gem_uri *u) {
     int length, i, ext;
     /* if no extension has been detected by this much */
     /* then treat it as a bin (application/octet-stream) */
     char buf[16] = {0};
 
-    if (!res) {
+    if (!u) {
         return NULL;
     }
 
-    length = strlen(res->data);
+    length = strlen(u->path);
 
     for(i=length; i > (length-16); i--) {
-        if (res->data[i] == '.') {
+        if (u->path[i] == '.') {
             break;
         }
     }
@@ -224,7 +224,7 @@ char *mime_type(struct resource *res) {
 
     ext = i + 1;
     for(i=ext; i<length; i++) {
-        buf[i-ext] = res->data[i];
+        buf[i-ext] = u->path[i];
     }
 
     return mime_type_by_ext(buf);

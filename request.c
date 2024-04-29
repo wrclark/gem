@@ -4,117 +4,210 @@
 #include "request.h"
 #include "config.h"
 
-/* 0 if scheme is gopher, http or https */
-static int scheme_proxy(struct request *r) {
-    return strncmp(r->data, "gopher://", 9)
-            || strncmp(r->data, "http://", 7)
-            || strncmp(r->data, "https://", 8);
-}
+#define STATE_SCHEME 0
+#define STATE_DOMAIN 1
+#define STATE_PORT 2
+#define STATE_PATH 3
 
-/* if the request contains invalid characters */
-static int invalid_characters(struct request *r) {
-    int i;
+/*  start by checking that the request string ends with \r\n
+   if it does, reduce its length
 
-    for(i=0; i<r->size; i++) {
-        if (r->data[i] == '\\') {
-            return 1;
-        }
-    }
+  decompose a URI into its (relevant) constituent parts
+   scheme://authority/path
+   authority is domain followed by an optional port
+   ie http://example.com
+      http://example.com:1337
+      http://example.com:1337/cool/picture.png
+   ->
+   --> scheme: http
+   --> domain: example.com
+   --> port: 1337 ("" if unspecified)
+   --> path: /cool/picture.png
+  
+   throw away request if error != 0
+*/
 
-    return 0;
-}
+void request_parse(const char *uri, struct gem_uri *u) {
 
-/* if the request is terminated with \r\n */
-static int rn_terminated(struct request *r) {
-    return strncmp(&(r->data[r->size - 2]), "\r\n", 2);
-}
-
-/* 0 if the hostname after "gemini://" is valid */
-static int valid_hostname(struct request *r) {
-    return strncmp(r->data + 9, GEM_HOSTNAME, strlen(GEM_HOSTNAME));
-}
-
-/* definitely too small */
-static int request_too_small(struct request *r) {
-    return r->size <= 10;
-}
-
-/* 0 if the request begins with "gemini://" */
-static int scheme_missing(struct request *r) {
-    return strncmp(r->data, "gemini://", 9);
-}
-
-/* check if a request string is valid.
- * starts with gemini://$HOSTNAME/(.*)
- * may contain port also: gemini://$HOSTNAME:1965
- * and the final 2 characters are CR LF, like in http
- * TODO: ignore conf'd hostname on local ip ranges */
-int req_valid(struct request *req) {
-
-    if (request_too_small(req)) {
-        return 1;
-    }
-
-    if (scheme_missing(req)) {
-        if (scheme_proxy(req)) {
-            return 10;
-        }
-        return 2;
-    }
-
-    if (valid_hostname(req)) {
-        return 3;
-    }
-
-    if (rn_terminated(req)) {
-        return 4;
-    }
-
-    if (invalid_characters(req)) {
-        return 5;
-    }
-
-    return 0;
-}
-
-/* get the resource requested in the validated request */
-int req_resource(struct request *req, struct resource *r) {
+    char request[1024 + 1] = {0};
+    char buffer[DECODER_BUFSIZ] = {0};
+    int bufidx = 0;
+    int state = STATE_SCHEME;
+    int i = 0;
     char *p;
 
-    strcpy(r->data, req->data + strlen(GEM_HOSTNAME) + 9);
-    r->size = strlen(r->data);
+    strcpy(request, uri);
 
-    p = &(r->data[r->size - 1]);
+    /* request does not end with \r\n, abort .. */
+    if (strcmp("\r\n", &request[strlen(request) - 2])) {
+        u->error |= REQUEST_ERR_TERM;
+        return;
+    }
+
+    p = request;
 
     /* clean up trailing \r and \n */
-    while(*p == '\r' || *p == '\n') {
+    while (*p == '\r' || *p == '\n') {
         *p = '\0';
-        r->size--;
         p--;
     }
 
-    /* remove leading "../" eg: "../../../../etc/passwd" */
-    /* just stop and send a FAIL status response */
-    if (strstr(r->data, "../") || strstr(r->data, "./")) {
-        return 1;
+    while (request[i])
+    {
+    START:
+
+        switch (state)
+        {
+        case STATE_SCHEME:
+            if (bufidx >= REQUEST_MAX_SCHEME) {
+                u->error |= REQUEST_ERR_SCHEME;
+                return;
+            }
+            if (request[i] == ':') {
+                state = STATE_DOMAIN;
+                /* I have a feeling this could crash */
+                if (!(request[i + 1] == request[i + 2] && request[i + 2] == '/')) {
+                    u->error |= REQUEST_ERR_SCHEME;
+                    return;
+                }
+                i += 3;
+                strcpy(u->scheme, buffer);
+                memset(buffer, 0, DECODER_BUFSIZ);
+                bufidx = 0;
+                goto START;
+            }
+            break;
+        case STATE_DOMAIN:
+            if (bufidx >= REQUEST_MAX_DOMAIN) {
+                u->error |= REQUEST_ERR_DOMAIN;
+                return;
+            }
+            if (request[i] == ':') {
+                state = STATE_PORT;
+                i += 1;
+                strcpy(u->domain, buffer);
+                memset(buffer, 0, DECODER_BUFSIZ);
+                bufidx = 0;
+                goto START;
+            }
+
+            if (request[i] == '/') {
+                state = STATE_PATH;
+                strcpy(u->domain, buffer);
+                memset(buffer, 0, DECODER_BUFSIZ);
+                bufidx = 0;
+                goto START;
+            }
+            break;
+        case STATE_PORT:
+            if (bufidx >= REQUEST_MAX_PORT) {
+                u->error |= REQUEST_ERR_PORT;
+                return;
+            }
+
+            if (request[i] == '/') {
+                state = STATE_PATH;
+                strcpy(u->port, buffer);
+                memset(buffer, 0, DECODER_BUFSIZ);
+                bufidx = 0;
+                goto START;
+            }
+            break;
+        case STATE_PATH:
+            if (bufidx >= REQUEST_MAX_PATH) {
+                u->error |= REQUEST_ERR_PATH;
+                return;
+            }
+            if (request[i] == '?') {
+                strcpy(u->path, buffer);
+                memset(buffer, 0, DECODER_BUFSIZ);
+                bufidx = 0;
+                return;
+            }
+            break;
+        }
+
+        buffer[bufidx++] = request[i];
+        i++;
     }
 
-    return 0;
+/*  reading the URI can terminate in the states domain, port or path
+    this does not change the state previously set */
+
+    switch (state) {
+    case STATE_DOMAIN:
+        if (bufidx >= REQUEST_MAX_DOMAIN) {
+            u->error |= REQUEST_ERR_DOMAIN;
+            return;
+        }
+        strcpy(u->domain, buffer);
+        break;
+    case STATE_PORT:
+        if (bufidx >= REQUEST_MAX_PORT) {
+            u->error |= REQUEST_ERR_PORT;
+            return;
+        }
+        strcpy(u->port, buffer);
+        break;
+    case STATE_PATH:
+        if (bufidx >= REQUEST_MAX_PATH) {
+            u->error |= REQUEST_ERR_PATH;
+            return;
+        }
+        strcpy(u->path, buffer);
+        break;
+    }
 }
 
-/* links that end in a / should have that / replaced with */
-/* "/index.gmi" */
-/* if the RR is just "" then replace it with "/index.gmi" */
-int req_check_index(struct resource *r) {
-    if (r->size < 1) {
-        r->data[r->size++] = '/';
+/* check path for "./" and "../" */
+/* return 1 (err) if any are encountered */
+/* also change path:"" to "/" */
+/* and         path:"/" to "/index.gmi" */
+void request_validate_uri(struct gem_uri *u) {
+
+    char *p = u->path;
+    while (*p && p) {
+        if (*p == '\r' || *p == '\n')
+        {
+            *p = '\0';
+            break;
+        }
+        p++;
     }
 
-    if (r->data[r->size-1] == '/') {
-        /* prob always fits */
-        strcpy(&(r->data[r->size]), "index.gmi");
-        r->size += strlen("index.gmi");
+    if (strstr(u->path, "../") || strstr(u->path, "./")) {
+        u->error |= REQUEST_ERR_PATH;
+        return;
     }
 
-    return 0;
+    if (strlen(u->path) < 1) {
+        strncpy(u->path, "/", REQUEST_MAX_PATH);
+    }
+
+    if (!strcmp(u->path, "/")) {
+        strncpy(u->path, "/index.gmi", REQUEST_MAX_PATH);
+    }
+
+    /* only allow scheme to be gemini */
+    if (strncmp("gemini", u->scheme, REQUEST_MAX_SCHEME)) {
+        u->error |= REQUEST_ERR_SCHEME;
+        return;
+    }
+
+    /* only allow hostname */
+    if (GEM_ONLY_HOSTNAME == 1) {
+        if (strncmp(GEM_HOSTNAME, u->domain, REQUEST_MAX_DOMAIN)) {
+            u->error |= REQUEST_ERR_DOMAIN;
+            return;
+        }
+    }
+}
+
+void request_print_uri(struct gem_uri *u) {
+    printf("scheme: %s\n"
+           "domain: %s\n"
+           "port: %s\n"
+           "path: %s\n"
+           "error: %d\n\n",
+           u->scheme, u->domain, u->port, u->path, u->error);
 }

@@ -14,8 +14,8 @@
 #include <openssl/ssl.h>
 #include "request.h"
 
-int resp_file_exists(struct resource *res);
-int resp_file_transfer(struct resource *res, SSL *ssl);
+int resp_file_exists(struct gem_uri *u);
+int resp_file_transfer(struct gem_uri *u, SSL *ssl);
 int resp_redirect(const char *path, SSL *ssl);
 int resp_error(const char *code, SSL *ssl);
 

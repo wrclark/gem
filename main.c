@@ -17,10 +17,10 @@ int main(int argc, char *argv[]) {
     SSL *ssl;
     struct sockaddr_in addr;
     int fd, client;
-    int err;
-    struct request *req;
-    struct resource *res;
     int opt = 1;
+
+    struct gem_uri uri = {0};
+    char buffer[GEM_URI_MAXSIZ + 1] = {0};
 
     (void) argc;
     (void) argv;
@@ -52,10 +52,6 @@ int main(int argc, char *argv[]) {
         client = accept(fd, NULL, NULL);
 
         if (!fork()) {
-
-            req = calloc(1, sizeof (struct request));
-            res = calloc(1, sizeof (struct resource));
-
             ctx = SSL_CTX_new(TLS_server_method());
             ssl = SSL_new(ctx);
             SSL_set_fd(ssl, client);
@@ -64,62 +60,40 @@ int main(int argc, char *argv[]) {
             SSL_use_PrivateKey_file(ssl, PRIVATE_KEY, SSL_FILETYPE_PEM);
 
             SSL_accept(ssl);
-            req->size = SSL_read(ssl, &req->data, 1024);
+            SSL_read(ssl, buffer, GEM_URI_MAXSIZ);
 
-            printf("data received: %s\n", req->data);
+            printf("\ndata received: %s\n", buffer);
 
-            /* if the request is 'invalid' .. */
-            if ((err = req_valid(req))) {
-                if (err == 10) {
-                    resp_error(RESP_STATUS_PROXY_REFUSED, ssl);
-                } else {
-                    resp_error(RESP_STATUS_BAD_REQUEST, ssl);
-                }
-                printf("invalid request! E=%d\n", err);
+            request_parse(buffer, &uri);
+            request_print_uri(&uri);
+            if (uri.error != 0) {
+                printf("(1) E=%d\n", uri.error);
+                resp_error(RESP_STATUS_BAD_REQUEST, ssl);
                 goto CLOSE_CONNECTION;
             }
 
-            puts("request OK");
-
-            /* if the resource requested is bad */
-            if ((err = req_resource(req, res))) {
-                resp_error(RESP_STATUS_PERMFAIL, ssl);
-                printf("invalid resource! E=%d\n", err);
+            request_validate_uri(&uri);
+            if (uri.error != 0) {
+                printf("(2) E=%d\n", uri.error);
+                resp_error(RESP_STATUS_BAD_REQUEST, ssl);
                 goto CLOSE_CONNECTION;
             }
-
-            puts("resource OK");
-
-            /* URIs ending in / should redirect to /index.gmi */
-            /* eg gemini://example.com/cats/ -> /cats/index.gmi */
-            /* URI of "gemini://example.com" -> /index.gmi */
-            if (req_check_index(res)) {
-                resp_redirect("gemini://"GEM_HOSTNAME"/", ssl);
-                puts("redirected \"\" -> \"/\"");
-            }
-
-            puts("index OK");
 
             /* file does not exist */
-            if (resp_file_exists(res)) {
+            if (resp_file_exists(&uri)) {
                 resp_error(RESP_STATUS_NOT_FOUND, ssl);
-                printf("file does not exist: %s\n", res->data);
+                printf("file does not exist: %s\n", uri.path);
                 goto CLOSE_CONNECTION;
             }
 
-            printf("file exists !! : %s\n", res->data);
-
             /* file transfer failed */
-            if (resp_file_transfer(res, ssl)) {
+            if (resp_file_transfer(&uri, ssl)) {
                 puts("file transfer failed");
                 goto CLOSE_CONNECTION;
             }
 
-            printf("resource requested: %s\n", res->data);
-
+            puts("OK");
 CLOSE_CONNECTION:
-            free(req);
-            free(res);
             SSL_shutdown(ssl);
             SSL_free(ssl);
             SSL_CTX_free(ctx);

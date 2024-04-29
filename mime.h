@@ -4,6 +4,6 @@
 #include "response.h"
 
 char *mime_type_by_ext(char *ext);
-char *mime_type(struct resource *res);
+char *mime_type(struct gem_uri *u);
 
 #endif
