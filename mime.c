@@ -4,7 +4,6 @@
 
 /* maybe this should be a has map */
 char *mime_type_by_ext(char *ext) {
-    printf("ext received: %s\n", ext);
     if (!strcmp(ext, "gmi")) {
         return "text/gemini";
     }
@@ -193,27 +192,22 @@ char *mime_type_by_ext(char *ext) {
         return "application/x-7z-compressed";
     }
 
-
     return "application/octet-stream";
 }
 
 /* takes a resource string and finds the corresponding */
 /* mime type for its extension */
 /* NULL on error */
-char *mime_type(struct gem_uri *u) {
+char *mime_type(const char *path) {
     int length, i, ext;
     /* if no extension has been detected by this much */
     /* then treat it as a bin (application/octet-stream) */
     char buf[16] = {0};
 
-    if (!u) {
-        return NULL;
-    }
-
-    length = strlen(u->path);
+    length = strlen(path);
 
     for(i=length; i > (length-16); i--) {
-        if (u->path[i] == '.') {
+        if (path[i] == '.') {
             break;
         }
     }
@@ -224,7 +218,7 @@ char *mime_type(struct gem_uri *u) {
 
     ext = i + 1;
     for(i=ext; i<length; i++) {
-        buf[i-ext] = u->path[i];
+        buf[i-ext] = path[i];
     }
 
     return mime_type_by_ext(buf);

@@ -1,66 +1,54 @@
-#include <openssl/ssl.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <openssl/ssl.h>
+
 #include "response.h"
 #include "mime.h"
 #include "config.h"
 
-/* determine if the file exists within the docroot */
-int resp_file_exists(struct gem_uri *u) {
-    char buf[2048];
+/* returns 1 if the file exists */
+static int file_exists(const char *path) {
     struct stat st;
-
-    if (!u) {
-        return 1;
-    }
-
-    strcpy(buf, GEM_DOCROOT);
-    strncpy(buf + strlen(GEM_DOCROOT),  u->path, 2048 - strlen(GEM_DOCROOT));
-    
-    printf("file exists=\"%s\"\n", buf);
-
-    /* returns 0 if the file exists */
-    return stat(buf, &st);
+    return stat(path, &st) == 0;
 }
 
-/* attempt to (in chunks*) transfer the requested file */
-int resp_file_transfer(struct gem_uri *u, SSL *ssl) {
+/* attempt to transfer the file over ssl */
+/* non-zero return means error */
+/* TODO chunks */
+static int file_transfer(const char *path, SSL *ssl) {
     char *mime;
-    FILE *f;
-    char buffer[2048] = {0};
     char *buf;
-    int n, err;
+    int err;
+    FILE *f;
+    size_t n;
 
     err = 1;
 
-    /* error */
-    mime = mime_type(u);
-    if (!mime) {
+    if (!(mime = mime_type(path))) {
         puts("mime error");
         return 1;
     }
 
-    sprintf(buffer, "%s%s", GEM_DOCROOT, u->path);
-
-    f = fopen(buffer, "r");
-    if (!f) {
+    if (!(f = fopen(path, "r"))) {
         puts("fopen() error");
         return 2;
     }
 
-    sprintf(buffer, "20 %s\r\n%c", mime, '\0');
-    SSL_write(ssl, buffer, strlen(buffer));
-    memset(buffer, 0, 1024);
+    SSL_write(ssl, "20 ", strlen("20 "));
+    SSL_write(ssl, mime, strlen(mime));
+    SSL_write(ssl, "\r\n", strlen("\r\n"));
 
     fseek(f, 0, SEEK_END);
     n = ftell(f);
     fseek(f, 0, SEEK_SET);
 
-    buf = calloc(1, n + 1);
-    if (!buf)
+    if (!(buf = calloc(1, n + 1)))
         goto EXIT;
     
-    fread(buf, n, 1, f);
+    if (!fread(buf, n, 1, f)) {
+        printf("fread() error\n");
+    }
+
     SSL_write(ssl, buf, n);
 
     err = 0;
@@ -71,15 +59,28 @@ EXIT:
     return err;
 }
 
-/* redirect to PATH for whatever reason */
-int resp_redirect(const char *path, SSL *ssl) {
-    if (!path || !ssl) {
-        return 1;
+/* attempts to locate a file in the docroot and serve it */
+/* non-zero return means an error has occurred */
+/* TODO: if path is a dir then list its contents unless an index.gmi exists within it */
+int resp_serve_file(struct gem_uri *u, SSL *ssl) {
+    char buf[2048];
+    sprintf(buf, "%s%s", GEM_DOCROOT, u->path);
+
+    if (!file_exists(buf)) {
+        return RESP_FILE_NOT_FOUND;
     }
 
+    if (file_transfer(buf, ssl)) {
+        return RESP_FILE_TRANSFER;
+    }
+
+    return 0;
+}
+
+/* redirect to PATH for whatever reason */
+int resp_redirect(const char *path, SSL *ssl) {
     SSL_write(ssl, "30 ", 3);
     SSL_write(ssl, path, strlen(path));
-
     return 0;
 }
 

@@ -28,7 +28,6 @@
 */
 
 void request_parse(const char *uri, struct gem_uri *u) {
-
     char request[1024 + 1] = {0};
     char buffer[DECODER_BUFSIZ] = {0};
     int bufidx = 0;
@@ -45,19 +44,16 @@ void request_parse(const char *uri, struct gem_uri *u) {
     }
 
     p = request;
-
-    /* clean up trailing \r and \n */
-    while (*p == '\r' || *p == '\n') {
-        *p = '\0';
-        p--;
+    while (*p++) {
+        if (*p == '\r' || *p == '\n') {
+            *p = '\0';
+            break;
+        }
     }
 
-    while (request[i])
-    {
-    START:
-
-        switch (state)
-        {
+    while (request[i]) {
+START:
+        switch (state) {
         case STATE_SCHEME:
             if (bufidx >= REQUEST_MAX_SCHEME) {
                 u->error |= REQUEST_ERR_SCHEME;
@@ -164,17 +160,6 @@ void request_parse(const char *uri, struct gem_uri *u) {
 /* also change path:"" to "/" */
 /* and         path:"/" to "/index.gmi" */
 void request_validate_uri(struct gem_uri *u) {
-
-    char *p = u->path;
-    while (*p && p) {
-        if (*p == '\r' || *p == '\n')
-        {
-            *p = '\0';
-            break;
-        }
-        p++;
-    }
-
     if (strstr(u->path, "../") || strstr(u->path, "./")) {
         u->error |= REQUEST_ERR_PATH;
         return;

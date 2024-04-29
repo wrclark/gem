@@ -18,6 +18,7 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in addr;
     int fd, client;
     int opt = 1;
+    int err;
 
     struct gem_uri uri = {0};
     char buffer[GEM_URI_MAXSIZ + 1] = {0};
@@ -66,6 +67,7 @@ int main(int argc, char *argv[]) {
 
             request_parse(buffer, &uri);
             request_print_uri(&uri);
+
             if (uri.error != 0) {
                 printf("(1) E=%d\n", uri.error);
                 resp_error(RESP_STATUS_BAD_REQUEST, ssl);
@@ -73,26 +75,30 @@ int main(int argc, char *argv[]) {
             }
 
             request_validate_uri(&uri);
+            
             if (uri.error != 0) {
                 printf("(2) E=%d\n", uri.error);
                 resp_error(RESP_STATUS_BAD_REQUEST, ssl);
                 goto CLOSE_CONNECTION;
             }
 
-            /* file does not exist */
-            if (resp_file_exists(&uri)) {
-                resp_error(RESP_STATUS_NOT_FOUND, ssl);
-                printf("file does not exist: %s\n", uri.path);
-                goto CLOSE_CONNECTION;
-            }
-
-            /* file transfer failed */
-            if (resp_file_transfer(&uri, ssl)) {
-                puts("file transfer failed");
+            if ((err = resp_serve_file(&uri, ssl))) {
+                switch(err) {
+                    case RESP_FILE_NOT_FOUND:
+                        puts("file not found");
+                        resp_error(RESP_STATUS_NOT_FOUND, ssl);
+                    break;
+                    case RESP_FILE_TRANSFER:
+                        puts("file transfer failed");
+                    break;
+                    default:
+                        printf("unknown error: %d\n", err);
+                }
                 goto CLOSE_CONNECTION;
             }
 
             puts("OK");
+
 CLOSE_CONNECTION:
             SSL_shutdown(ssl);
             SSL_free(ssl);

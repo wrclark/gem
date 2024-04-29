@@ -11,11 +11,13 @@
 #define RESP_STATUS_BAD_REQUEST   "59"
 #define RESP_STATUS_CERT          "60"
 
+#define RESP_FILE_NOT_FOUND  (1 << 0)
+#define RESP_FILE_TRANSFER   (1 << 1)
+
 #include <openssl/ssl.h>
 #include "request.h"
 
-int resp_file_exists(struct gem_uri *u);
-int resp_file_transfer(struct gem_uri *u, SSL *ssl);
+int resp_serve_file(struct gem_uri *u, SSL *ssl);
 int resp_redirect(const char *path, SSL *ssl);
 int resp_error(const char *code, SSL *ssl);
 
