@@ -176,10 +176,6 @@ void request_validate_uri(struct gem_uri *u) {
         strncpy(u->path, "/", REQUEST_MAX_PATH);
     }
 
-    if (!strcmp(u->path, "/")) {
-        strncpy(u->path, "/index.gmi", REQUEST_MAX_PATH);
-    }
-
     /* only allow scheme to be gemini */
     if (strncmp("gemini", u->scheme, REQUEST_MAX_SCHEME)) {
         u->error |= REQUEST_ERR_WRONG_SCHEME;

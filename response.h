@@ -7,6 +7,7 @@
 #define RESP_STATUS_TEMPFAIL      "40"
 #define RESP_STATUS_PERMFAIL      "50"
 #define RESP_STATUS_NOT_FOUND     "51"
+#define RESP_STATUS_GONE          "52"
 #define RESP_STATUS_PROXY_REFUSED "53"
 #define RESP_STATUS_BAD_REQUEST   "59"
 #define RESP_STATUS_CERT          "60"

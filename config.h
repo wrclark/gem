@@ -17,6 +17,14 @@
 /* like /var/www */
 #define GEM_DOCROOT "capsule"
 
+/* list out the content of directories unless they contain an index file */
+/* name of the index file specified below this def */
+#define GEM_LIST_DIR 1
+
+/* index file name */
+#define GEM_INDEX_FILE "index.gmi"
+
+/* */
 #define GEM_URI_MAXSIZ 1024
 
 #endif
