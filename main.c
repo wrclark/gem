@@ -67,6 +67,7 @@ int main(int argc, char *argv[]) {
             SSL_read(ssl, buffer, GEM_URI_MAXSIZ);
 
             printf("\ndata received: %s\n", buffer);
+            
             request_parse(buffer, &uri);
             request_print_uri(&uri);
 

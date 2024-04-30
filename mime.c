@@ -204,6 +204,10 @@ char *mime_type(const char *path) {
     /* then treat it as a bin (application/octet-stream) */
     char buf[16] = {0};
 
+    if (!path) {
+        return NULL;
+    }
+
     length = strlen(path);
 
     for(i=length; i > (length-16); i--) {

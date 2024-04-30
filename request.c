@@ -27,7 +27,6 @@
   
    throw away request if error != 0
 */
-
 void request_parse(const char *uri, struct gem_uri *u) {
     char request[1024 + 1] = {0};
     char buffer[DECODER_BUFSIZ] = {0};
@@ -35,6 +34,10 @@ void request_parse(const char *uri, struct gem_uri *u) {
     int state = STATE_SCHEME;
     int i = 0;
     char *p;
+
+    if (!uri || !u) {
+        return;
+    }
 
     strcpy(request, uri);
 
@@ -163,10 +166,13 @@ START:
 }
 
 /* check path for "./" and "../" */
-/* return 1 (err) if any are encountered */
-/* also change path:"" to "/" */
-/* and         path:"/" to "/index.gmi" */
+/* also change path "" to "/"    */
+/* sets error field accordingly  */
 void request_validate_uri(struct gem_uri *u) {
+    if (!u) {
+        return;
+    }
+
     if (strstr(u->path, "../") || strstr(u->path, "./")) {
         u->error |= REQUEST_ERR_PATH;
         return;

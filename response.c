@@ -14,6 +14,10 @@
 static int file_is_dir(const char *path) {
     struct stat st;
 
+    if (!path) {
+        return 0;
+    }
+
     /* it should exist .. */
     if (stat(path, &st) != 0) {
         return 0;
@@ -27,6 +31,10 @@ static int file_is_dir(const char *path) {
 static int dir_has_index(const char *path) {
     char buf[2048] = {0};
     struct stat st;
+
+    if (!path) {
+        return 0;
+    }
 
     strcpy(buf, path);
 
@@ -48,6 +56,10 @@ static void iterate_dir(const char *path, SSL *ssl) {
     struct dirent **files;
     int qty;
     int is_dir;
+
+    if (!path || !ssl) {
+        return;
+    }
 
     qty = scandir(path, &files, NULL, alphasort);
     if (qty == -1) {
@@ -85,6 +97,11 @@ static void iterate_dir(const char *path, SSL *ssl) {
 /* returns 1 if the file exists */
 static int file_exists(const char *path) {
     struct stat st;
+
+    if (!path) {
+        return 0;
+    }
+
     return stat(path, &st) == 0;
 }
 
@@ -97,6 +114,10 @@ static int file_transfer(const char *path, SSL *ssl) {
     int err;
     FILE *f;
     size_t n;
+
+    if (!path || !ssl) {
+        return 3;
+    }
 
     err = 1;
 
@@ -141,6 +162,11 @@ EXIT:
 int resp_serve_file(struct gem_uri *u, SSL *ssl) {
     int index;
     char buf[2048];
+
+    if (!u || !ssl) {
+        return 3;
+    }
+
     sprintf(buf, "%s%s", GEM_DOCROOT, u->path);
 
     /* if file does not exist */
@@ -168,7 +194,7 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
             if (u->path[strlen(u->path)] != '/') {
                 strcpy(u->path + strlen(u->path), "/");
             }
-            sprintf(buf, "gemini://%s%sindex.gmi", GEM_HOSTNAME, u->path);
+            sprintf(buf, "gemini://" GEM_HOSTNAME "%s" GEM_INDEX_FILE, u->path);
             resp_redirect(buf, ssl);
             return 0;
         }
