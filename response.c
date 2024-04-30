@@ -158,7 +158,6 @@ EXIT:
 
 /* attempts to locate a file in the docroot and serve it */
 /* non-zero return means an error has occurred */
-/* TODO: if path is a dir then list its contents unless an index.gmi exists within it */
 int resp_serve_file(struct gem_uri *u, SSL *ssl) {
     int index;
     char buf[2048];
@@ -177,9 +176,13 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
     /* if file is a directory */
     if (file_is_dir(buf)) {
 
-        /* make sure a dir path ends with / */
-        if (buf[strlen(buf)] != '/') {
-            strcpy(buf + strlen(buf), "/");
+        /* if it's a directory, and the path does not end in / */
+        /* then re-direct to the real url */
+        if (strcmp(u->path, "/") && u->path[strlen(u->path) - 1] != '/') {
+            strcpy(u->path + strlen(u->path), "/");
+            printf("path=%s\n", u->path);
+            resp_redirect(u->path, ssl);
+            return 0;
         }
 
         index = dir_has_index(buf);
@@ -191,10 +194,7 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
         }
 
         if (index) {
-            if (u->path[strlen(u->path)] != '/') {
-                strcpy(u->path + strlen(u->path), "/");
-            }
-            sprintf(buf, "gemini://" GEM_HOSTNAME "%s" GEM_INDEX_FILE, u->path);
+            sprintf(buf, "%s" GEM_INDEX_FILE, u->path);
             resp_redirect(buf, ssl);
             return 0;
         }
@@ -212,11 +212,11 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
     return 0;
 }
 
-/* redirect to PATH for whatever reason */
+/* re-direct to a relative path */
 int resp_redirect(const char *path, SSL *ssl) {
-    SSL_write(ssl, "30 ", 3);
-    SSL_write(ssl, path, strlen(path));
-    SSL_write(ssl, "\r\n", 3);
+    char buf[4096];
+    sprintf(buf, "30 gemini://" GEM_HOSTNAME "%s\r\n", path);
+    SSL_write(ssl, buf, strlen(buf));
     return 0;
 }
 
