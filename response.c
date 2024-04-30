@@ -9,6 +9,24 @@
 #include "mime.h"
 #include "config.h"
 
+
+/* return file size */
+static size_t filesize(const char *path) {
+    struct stat st;
+
+    printf("filesize=%s\n", path);
+
+    if (!path) {
+        return 0;
+    }
+
+    if (stat(path, &st) != 0) {
+        return 0;
+    }
+
+    return st.st_size;
+}
+
 /* check if a file is a directory */
 /* non-zero return means that it is */
 static int file_is_dir(const char *path) {
@@ -52,10 +70,12 @@ static int dir_has_index(const char *path) {
 /* as a link, making distinction between other dir's and regular files. */
 static void iterate_dir(const char *path, SSL *ssl) {
     char buffer[4096];
+    char file_path[4096];
     char new_path[512];
     struct dirent **files;
     int qty;
     int is_dir;
+    size_t size;
 
     if (!path || !ssl) {
         return;
@@ -80,16 +100,17 @@ static void iterate_dir(const char *path, SSL *ssl) {
             continue;
         }
 
+        sprintf(file_path, "%s%s", path, files[qty]->d_name);
+        size = filesize(file_path);
         is_dir = files[qty]->d_type == DT_DIR;
         memset(buffer, 0, 4096);
-        sprintf(buffer, "=> gemini://%s%s%s%c   <%s> %s%c\n",
-            GEM_HOSTNAME,
-            new_path,
-            files[qty]->d_name,
-            is_dir ? '/' : ' ',
-            is_dir ? "DIR" : "FILE",
-            files[qty]->d_name,
-            is_dir ? '/' : ' ');
+        if (is_dir) {
+            sprintf(buffer, "=> gemini://" GEM_HOSTNAME "%s%s/   <DIR> %s/\n",
+                    new_path, files[qty]->d_name, files[qty]->d_name);
+        } else {
+            sprintf(buffer, "=> gemini://" GEM_HOSTNAME "%s%s   <FILE> %s <%ld B>\n",
+                    new_path, files[qty]->d_name, files[qty]->d_name, size);
+        }
         SSL_write(ssl, buffer, strlen(buffer));
     }
 }
