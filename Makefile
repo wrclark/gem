@@ -1,7 +1,8 @@
 SHELL:=/usr/bin/bash
 CC=gcc
-CFLAGS=-std=c89 -O2 -W -Wall -Wextra -pedantic -I.
+CFLAGS=-std=c89 -O3 -W -Wall -Wextra -pedantic -I.
 CFLAGS+=-march=native -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong
+CFLAGS+=-fstack-clash-protection -fcf-protection
 CFILES=$(wildcard *.c)
 BIN=gem
 
