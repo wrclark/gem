@@ -197,14 +197,13 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
     if (file_is_dir(buf)) {
 
         /* if it's a directory, and the path does not end in / */
-        /* then re-direct to the real url */
-        if (strcmp(u->path, "/") && u->path[strlen(u->path) - 1] != '/') {
-            strcpy(u->path + strlen(u->path), "/");
-            printf("path=%s\n", u->path);
-            resp_redirect(u->path, ssl);
-            return 0;
+        /* then append a / */
+        if (buf[strlen(buf) - 1] != '/') {
+            strcpy(buf + strlen(buf), "/");
+            printf("path=%s\n", buf);
         }
 
+        /* if path contains index*/
         index = dir_has_index(buf);
 
         /* no index file present, and dir enumeration is enabled */
@@ -213,15 +212,14 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
             return 0;
         }
 
+        /* index file is present so don't enum dir regardless */
         if (index) {
-            sprintf(buf, "%s" GEM_INDEX_FILE, u->path);
-            resp_redirect(buf, ssl);
+            strcpy(buf + strlen(buf), GEM_INDEX_FILE);
+        } else {
+            /* no dir enum and no file to view, so send error 61 why not */
+            resp_error("61", ssl);
             return 0;
         }
-
-        /* no dir enum and no file to view, so send error 61 why not */
-        resp_error("61", ssl);
-        return 0;
     }
 
     /* if file transfer failed */
@@ -229,14 +227,6 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
         return RESP_FILE_TRANSFER;
     }
 
-    return 0;
-}
-
-/* re-direct to a relative path */
-int resp_redirect(const char *path, SSL *ssl) {
-    char buf[4096];
-    sprintf(buf, "30 gemini://" GEM_HOSTNAME "%s\r\n", path);
-    SSL_write(ssl, buf, strlen(buf));
     return 0;
 }
 
