@@ -14,8 +14,6 @@
 static size_t filesize(const char *path) {
     struct stat st;
 
-    printf("filesize=%s\n", path);
-
     if (!path) {
         return 0;
     }
@@ -100,14 +98,15 @@ static void iterate_dir(const char *path, SSL *ssl) {
             continue;
         }
 
-        sprintf(file_path, "%s%s", path, files[qty]->d_name);
-        size = filesize(file_path);
-        is_dir = files[qty]->d_type == DT_DIR;
         memset(buffer, 0, 4096);
+        sprintf(file_path, "%s%s", path, files[qty]->d_name);
+        is_dir = files[qty]->d_type == DT_DIR;
+        
         if (is_dir) {
             sprintf(buffer, "=> gemini://" GEM_HOSTNAME "%s%s/   <DIR> %s/\n",
                     new_path, files[qty]->d_name, files[qty]->d_name);
         } else {
+            size = filesize(file_path);
             sprintf(buffer, "=> gemini://" GEM_HOSTNAME "%s%s   <FILE> %s <%ld B>\n",
                     new_path, files[qty]->d_name, files[qty]->d_name, size);
         }
