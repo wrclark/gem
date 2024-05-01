@@ -79,6 +79,7 @@ static void iterate_dir(const char *path, SSL *ssl) {
         return;
     }
 
+    /* get a LL of all files in path, sorted alphabetically */
     qty = scandir(path, &files, NULL, alphasort);
     if (qty == -1) {
         printf("scandir() error: %s\n", path);
@@ -89,8 +90,7 @@ static void iterate_dir(const char *path, SSL *ssl) {
     strcpy(new_path, path + strlen(GEM_DOCROOT));
 
     SSL_write(ssl, "20 text/gemini\r\n", strlen("20 text/gemini\r\n"));
-    SSL_write(ssl, "# Directory listing\n", strlen("# Directory listing\n"));
-    SSL_write(ssl, "Auto-generated\n", strlen("Auto-generated\n"));
+    SSL_write(ssl, "## Directory listing\n", strlen("## Directory listing\n"));
 
     while (qty--) {
 
@@ -125,9 +125,8 @@ static int file_exists(const char *path) {
     return stat(path, &st) == 0;
 }
 
-/* attempt to transfer the file over ssl */
+/* attempt to transfer the file over ssl in chunks */
 /* non-zero return means error */
-/* TODO chunks */
 static int file_transfer(const char *path, SSL *ssl) {
     char *mime;
     char *buf;
@@ -150,28 +149,28 @@ static int file_transfer(const char *path, SSL *ssl) {
         puts("fopen() error");
         return 2;
     }
+    
+    if (!(buf = malloc(GEM_XFER_CHUNK_SIZ + 1))) {
+        goto EXIT;
+    }
 
     SSL_write(ssl, "20 ", strlen("20 "));
     SSL_write(ssl, mime, strlen(mime));
     SSL_write(ssl, "\r\n", strlen("\r\n"));
-
-    fseek(f, 0, SEEK_END);
-    n = ftell(f);
-    fseek(f, 0, SEEK_SET);
-
-    if (!(buf = calloc(1, n + 1)))
-        goto EXIT;
     
-    if (!fread(buf, n, 1, f)) {
-        printf("fread() error\n");
+    while(!feof(f)) {
+        n = fread(buf, 1, GEM_XFER_CHUNK_SIZ, f);
+        if (n < GEM_XFER_CHUNK_SIZ && ferror(f)) {
+            perror("fread()");
+            goto EXIT;
+        }
+        SSL_write(ssl, buf, n);
     }
-
-    SSL_write(ssl, buf, n);
-
+    
     err = 0;
-    free(buf);
 
 EXIT:
+    free(buf);
     fclose(f);
     return err;
 }
