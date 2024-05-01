@@ -8,93 +8,10 @@
 #include "response.h"
 #include "mime.h"
 #include "config.h"
+#include "file.h"
 
-/* convert n bytes to a pretty file size format */
-/* eg 3453554 -> "3.45 MB" */
-
-char *pfs_kilo = "KB";
-char *pfs_mega = "MB";
-char *pfs_giga = "GB";
-
-struct pfs_data {
-    char *type;
-    float value;
-};
-
-#define BILLION (1000 * 1000 * 1000)
-#define MILLION (1000 * 1000)
-#define THOUSAND (1000)
-
-struct pfs_data pretty_filesize(size_t siz) {
-    struct pfs_data p;
-    if (siz >= BILLION) {
-        p.type = pfs_giga;
-        p.value = (float)(siz / BILLION) + ((float)(siz % BILLION))/((float)BILLION);
-    } else if (siz >= MILLION) {
-        p.type = pfs_mega;
-        p.value = (float)(siz / MILLION) + ((float)(siz % MILLION))/((float)MILLION);
-    } else if (siz >= THOUSAND) {
-        p.type = pfs_kilo;
-        p.value = (float)(siz / THOUSAND) + ((float)(siz % THOUSAND))/((float)THOUSAND);
-    } else {
-        p.type = NULL;
-        p.value = (float)siz;
-    }
-
-    return p;
-}
-
-/* return file size */
-static size_t filesize(const char *path) {
-    struct stat st;
-
-    if (!path) {
-        return 0;
-    }
-
-    if (stat(path, &st) != 0) {
-        return 0;
-    }
-
-    return st.st_size;
-}
-
-/* check if a file is a directory */
-/* non-zero return means that it is */
-static int file_is_dir(const char *path) {
-    struct stat st;
-
-    if (!path) {
-        return 0;
-    }
-
-    /* it should exist .. */
-    if (stat(path, &st) != 0) {
-        return 0;
-    }
-
-    return (st.st_mode & S_IFMT) == S_IFDIR;
-}
-
-/* if a path (dir) contains a certain file or not */
-/* non-zero return means it does */
-static int dir_has_index(const char *path) {
-    char buf[2048] = {0};
-    struct stat st;
-
-    if (!path) {
-        return 0;
-    }
-
-    strcpy(buf, path);
-
-    /* check if the path ends in a / or not */
-    if (buf[strlen(buf)] != '/') {
-        strcpy(buf + strlen(buf), "/");
-    }
-
-    strcpy(buf + strlen(buf), GEM_INDEX_FILE);
-    return stat(buf, &st) == 0;
+static int write_ssl(SSL *ssl, const char *str) {
+    return SSL_write(ssl, str, strlen(str));
 }
 
 /* iterate (alphanumerically) all of the files but "." and ".." */
@@ -124,8 +41,8 @@ static void iterate_dir(const char *path, SSL *ssl) {
     /* remove docroot */
     strcpy(new_path, path + strlen(GEM_DOCROOT));
 
-    SSL_write(ssl, "20 text/gemini\r\n", strlen("20 text/gemini\r\n"));
-    SSL_write(ssl, "## Directory listing\n", strlen("## Directory listing\n"));
+    write_ssl(ssl, "20 text/gemini\r\n");
+    write_ssl(ssl, "## Directory listing\n");
 
     while (qty--) {
 
@@ -152,19 +69,10 @@ static void iterate_dir(const char *path, SSL *ssl) {
             }
             
         }
-        SSL_write(ssl, buffer, strlen(buffer));
-    }
-}
-
-/* returns 1 if the file exists */
-static int file_exists(const char *path) {
-    struct stat st;
-
-    if (!path) {
-        return 0;
+        write_ssl(ssl, buffer);
     }
 
-    return stat(path, &st) == 0;
+    free(files);
 }
 
 /* attempt to transfer the file over ssl in chunks */
@@ -196,9 +104,9 @@ static int file_transfer(const char *path, SSL *ssl) {
         goto EXIT;
     }
 
-    SSL_write(ssl, "20 ", strlen("20 "));
-    SSL_write(ssl, mime, strlen(mime));
-    SSL_write(ssl, "\r\n", strlen("\r\n"));
+    write_ssl(ssl, "20 ");
+    write_ssl(ssl, mime);
+    write_ssl(ssl, "\r\n");
     
     while(!feof(f)) {
         n = fread(buf, 1, GEM_XFER_CHUNK_SIZ, f);
@@ -241,7 +149,6 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
         /* then append a / */
         if (buf[strlen(buf) - 1] != '/') {
             strcpy(buf + strlen(buf), "/");
-            printf("path=%s\n", buf);
         }
 
         /* if path contains index*/
@@ -272,7 +179,7 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
 }
 
 int resp_error(const char *code, SSL *ssl) {
-    SSL_write(ssl, code, strlen(code));
-    SSL_write(ssl, "\r\n", 2);
+    write_ssl(ssl, code);
+    write_ssl(ssl, "\r\n");
     return 0;
 }
