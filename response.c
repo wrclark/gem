@@ -42,7 +42,9 @@ static void iterate_dir(const char *path, SSL *ssl) {
     /* remove docroot */
     strcpy(new_path, path + strlen(GEM_DOCROOT));
 
-    write_ssl(ssl, "20 text/gemini\r\nIndex\n");
+    if (write_ssl(ssl, "20 text/gemini\r\nIndex\n") <= 0) {
+        goto EXIT;
+    }
 
     while (qty--) {
 
@@ -67,9 +69,12 @@ static void iterate_dir(const char *path, SSL *ssl) {
             sprintf(buffer, "=> %s%s/   <DIR> %s/\n", new_path, files[qty]->d_name, files[qty]->d_name);
         }
 
-        write_ssl(ssl, buffer);
+        if (write_ssl(ssl, buffer) <= 0) {
+            goto EXIT;
+        }
     }
 
+EXIT:
     free(files);
 }
 
@@ -104,7 +109,9 @@ static int file_transfer(const char *path, SSL *ssl) {
     }
 
     sprintf(header, "20 %s\r\n", mime);
-    write_ssl(ssl, header);
+    if (write_ssl(ssl, header) <= 0) {
+        goto EXIT;
+    }
     
     while(!feof(f)) {
         n = fread(buf, 1, GEM_XFER_CHUNK_SIZ, f);
@@ -112,7 +119,10 @@ static int file_transfer(const char *path, SSL *ssl) {
             perror("fread()");
             goto EXIT;
         }
-        SSL_write(ssl, buf, n);
+
+        if (SSL_write(ssl, buf, n) <= 0) {
+            goto EXIT;
+        }
     }
     
     err = 0;

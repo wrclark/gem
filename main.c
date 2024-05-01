@@ -2,6 +2,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
@@ -16,6 +17,7 @@ int main(int argc, char *argv[]) {
     SSL_CTX *ctx;
     SSL *ssl;
     struct sockaddr_in addr;
+    struct timeval timeout;
     int fd, client;
     int opt = 1;
     int err;
@@ -26,15 +28,20 @@ int main(int argc, char *argv[]) {
     (void) argc;
     (void) argv;
 
+    /* timeout CLIENT sockets after 10 seconds */
+    timeout.tv_sec = 10;
+    timeout.tv_usec = 0;
+
     fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) {
         perror("socket()");
         exit(1);
     }
 
-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof opt)) {
+    /* useful for quick restarts */
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof opt) < 0) {
+        perror("setsockopt(SO_REUSEADDR)");
         close(fd);
-        perror("setsockopt()");
         exit(1);
     }
 
@@ -52,6 +59,20 @@ int main(int argc, char *argv[]) {
 
         client = accept(fd, NULL, NULL);
 
+        /* timeout on receive */
+        if (setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, &timeout,sizeof timeout) < 0) {
+            perror("setsockopt(SO_RCVTIMEO)");
+            close(client);
+            continue;
+        }
+
+        /* timeout on send */
+        if (setsockopt(client, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof timeout) < 0) {
+            perror("setsockopt(SO_SNDTIMEO)");
+            close(client);
+            continue;
+        }
+
         if (!fork()) {
             memset(buffer, 0, GEM_URI_MAXSIZ);
             memset(&uri, 0, sizeof (uri));
@@ -64,7 +85,9 @@ int main(int argc, char *argv[]) {
             SSL_use_PrivateKey_file(ssl, PRIVATE_KEY, SSL_FILETYPE_PEM);
 
             SSL_accept(ssl);
-            SSL_read(ssl, buffer, GEM_URI_MAXSIZ);
+            if (SSL_read(ssl, buffer, GEM_URI_MAXSIZ) <= 0) {
+                goto CLOSE_CONNECTION;
+            }
 
             printf("\ndata received: %s\n", buffer);
             
