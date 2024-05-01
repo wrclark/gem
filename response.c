@@ -81,6 +81,7 @@ static int file_transfer(const char *path, SSL *ssl) {
     int err;
     FILE *f;
     size_t n;
+    char header[256];
 
     if (!path || !ssl) {
         return 3;
@@ -102,9 +103,8 @@ static int file_transfer(const char *path, SSL *ssl) {
         goto EXIT;
     }
 
-    write_ssl(ssl, "20 ");
-    write_ssl(ssl, mime);
-    write_ssl(ssl, "\r\n");
+    sprintf(header, "20 %s\r\n", mime);
+    write_ssl(ssl, header);
     
     while(!feof(f)) {
         n = fread(buf, 1, GEM_XFER_CHUNK_SIZ, f);
@@ -116,9 +116,9 @@ static int file_transfer(const char *path, SSL *ssl) {
     }
     
     err = 0;
-    free(buf);
 
 EXIT:
+    free(buf);
     fclose(f);
     return err;
 }
