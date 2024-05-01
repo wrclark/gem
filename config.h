@@ -28,6 +28,6 @@
 #define GEM_URI_MAXSIZ 1024
 
 /* malloc chunk size for transferring files */
-#define GEM_XFER_CHUNK_SIZ 1000 * 1000 
+#define GEM_XFER_CHUNK_SIZ (1000 * 1000) /* 1 MB */
 
 #endif

@@ -10,6 +10,7 @@
 #include "config.h"
 #include "file.h"
 
+/* helper */
 static int write_ssl(SSL *ssl, const char *str) {
     return SSL_write(ssl, str, strlen(str));
 }
@@ -22,10 +23,10 @@ static void iterate_dir(const char *path, SSL *ssl) {
     char file_path[4096];
     char new_path[512];
     struct dirent **files;
+    struct pfs_data pfs;
     int qty;
     int is_dir;
     size_t size;
-    struct pfs_data pfs;
 
     if (!path || !ssl) {
         return;
@@ -41,8 +42,7 @@ static void iterate_dir(const char *path, SSL *ssl) {
     /* remove docroot */
     strcpy(new_path, path + strlen(GEM_DOCROOT));
 
-    write_ssl(ssl, "20 text/gemini\r\n");
-    write_ssl(ssl, "## Directory listing\n");
+    write_ssl(ssl, "20 text/gemini\r\nIndex\n");
 
     while (qty--) {
 
@@ -50,25 +50,23 @@ static void iterate_dir(const char *path, SSL *ssl) {
             continue;
         }
 
-        memset(buffer, 0, 4096);
-        sprintf(file_path, "%s%s", path, files[qty]->d_name);
-        is_dir = files[qty]->d_type == DT_DIR;
+        is_dir = (files[qty]->d_type == DT_DIR);
         
-        if (is_dir) {
-            sprintf(buffer, "=> gemini://" GEM_HOSTNAME "%s%s/   <DIR> %s/\n",
-                    new_path, files[qty]->d_name, files[qty]->d_name);
-        } else {
+        if (!is_dir) {
+            sprintf(file_path, "%s%s", path, files[qty]->d_name);
             size = filesize(file_path);
             pfs = pretty_filesize(size);
             if (pfs.type) {
-                sprintf(buffer, "=> gemini://" GEM_HOSTNAME "%s%s   <FILE> %s <%.2f %s>\n",
+                sprintf(buffer, "=> %s%s   <FILE> %s <%.2f %s>\n",
                     new_path, files[qty]->d_name, files[qty]->d_name, pfs.value, pfs.type);
             } else {
-                sprintf(buffer, "=> gemini://" GEM_HOSTNAME "%s%s   <FILE> %s <%.0f B>\n",
+                sprintf(buffer, "=> %s%s   <FILE> %s <%.0f B>\n",
                     new_path, files[qty]->d_name, files[qty]->d_name, pfs.value);
             }
-            
+        } else {
+            sprintf(buffer, "=> %s%s/   <DIR> %s/\n", new_path, files[qty]->d_name, files[qty]->d_name);
         }
+
         write_ssl(ssl, buffer);
     }
 
@@ -118,9 +116,9 @@ static int file_transfer(const char *path, SSL *ssl) {
     }
     
     err = 0;
+    free(buf);
 
 EXIT:
-    free(buf);
     fclose(f);
     return err;
 }
@@ -135,6 +133,7 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
         return 3;
     }
 
+    /* append user path to docroot */
     sprintf(buf, "%s%s", GEM_DOCROOT, u->path);
 
     /* if file does not exist */
