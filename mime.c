@@ -4,6 +4,11 @@
 
 /* maybe this should be a has map */
 char *mime_type_by_ext(char *ext) {
+
+    if (!ext) {
+        return "application/octet-stream";
+    }
+
     if (!strcmp(ext, "gmi")) {
         return "text/gemini";
     }
@@ -210,13 +215,13 @@ char *mime_type(const char *path) {
 
     length = strlen(path);
 
-    for(i=length; i > (length-16); i--) {
+    for(i=length; i && i > (length-16); i--) {
         if (path[i] == '.') {
             break;
         }
     }
 
-    if (i == (length - 16)) {
+    if (!i || i == (length - 16)) {
         return mime_type_by_ext(NULL);
     }
 
