@@ -9,6 +9,40 @@
 #include "mime.h"
 #include "config.h"
 
+/* convert n bytes to a pretty file size format */
+/* eg 3453554 -> "3.45 MB" */
+
+char *pfs_kilo = "KB";
+char *pfs_mega = "MB";
+char *pfs_giga = "GB";
+
+struct pfs_data {
+    char *type;
+    float value;
+};
+
+#define BILLION (1000 * 1000 * 1000)
+#define MILLION (1000 * 1000)
+#define THOUSAND (1000)
+
+struct pfs_data pretty_filesize(size_t siz) {
+    struct pfs_data p;
+    if (siz >= BILLION) {
+        p.type = pfs_giga;
+        p.value = (float)(siz / BILLION) + ((float)(siz % BILLION))/((float)BILLION);
+    } else if (siz >= MILLION) {
+        p.type = pfs_mega;
+        p.value = (float)(siz / MILLION) + ((float)(siz % MILLION))/((float)MILLION);
+    } else if (siz >= THOUSAND) {
+        p.type = pfs_kilo;
+        p.value = (float)(siz / THOUSAND) + ((float)(siz % THOUSAND))/((float)THOUSAND);
+    } else {
+        p.type = NULL;
+        p.value = (float)siz;
+    }
+
+    return p;
+}
 
 /* return file size */
 static size_t filesize(const char *path) {
@@ -74,6 +108,7 @@ static void iterate_dir(const char *path, SSL *ssl) {
     int qty;
     int is_dir;
     size_t size;
+    struct pfs_data pfs;
 
     if (!path || !ssl) {
         return;
@@ -107,8 +142,15 @@ static void iterate_dir(const char *path, SSL *ssl) {
                     new_path, files[qty]->d_name, files[qty]->d_name);
         } else {
             size = filesize(file_path);
-            sprintf(buffer, "=> gemini://" GEM_HOSTNAME "%s%s   <FILE> %s <%ld B>\n",
-                    new_path, files[qty]->d_name, files[qty]->d_name, size);
+            pfs = pretty_filesize(size);
+            if (pfs.type) {
+                sprintf(buffer, "=> gemini://" GEM_HOSTNAME "%s%s   <FILE> %s <%.2f %s>\n",
+                    new_path, files[qty]->d_name, files[qty]->d_name, pfs.value, pfs.type);
+            } else {
+                sprintf(buffer, "=> gemini://" GEM_HOSTNAME "%s%s   <FILE> %s <%.0f B>\n",
+                    new_path, files[qty]->d_name, files[qty]->d_name, pfs.value);
+            }
+            
         }
         SSL_write(ssl, buffer, strlen(buffer));
     }
