@@ -84,7 +84,10 @@ int main(int argc, char *argv[]) {
             SSL_use_certificate_chain_file(ssl, PUBLIC_KEY);
             SSL_use_PrivateKey_file(ssl, PRIVATE_KEY, SSL_FILETYPE_PEM);
 
-            SSL_accept(ssl);
+            if (SSL_accept(ssl) != 1) {
+                goto CLOSE_CONNECTION;
+            }
+            
             if (SSL_read(ssl, buffer, GEM_URI_MAXSIZ) <= 0) {
                 goto CLOSE_CONNECTION;
             }
