@@ -1,6 +1,5 @@
 # second page
 
-## enjoy this photo of a dog
-### the dog
+look at the dog picture
 
-=> gemini://localhost/dog.png    a dog
+=> dog.png    a dog

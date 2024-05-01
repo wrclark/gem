@@ -11,9 +11,11 @@ Welcome to my gemini capsule
                 ▀      █   ██    
 ```
 
+> quote that sinks in
+
 ### Here is a list
 * item 1
 * item 2
 * item 3
 
-=> gemini://localhost/second.gmi    My second page
+=> second.gmi    My second page
