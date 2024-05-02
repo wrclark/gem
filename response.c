@@ -173,7 +173,7 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
             strcpy(buf + strlen(buf), GEM_INDEX_FILE);
         } else {
             /* no dir enum and no file to view, so send error 61 why not */
-            resp_error("61", ssl);
+            resp_error(RESP_STATUS_CERT_NOT_AUTH, ssl);
             return 0;
         }
     }
