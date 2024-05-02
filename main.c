@@ -51,6 +51,7 @@ int main(int argc, char *argv[]) {
 
     if (bind(fd, (struct sockaddr *)&addr, sizeof addr) < 0) {
         perror("bind()");
+        close(fd);
         exit(1);
     }
 

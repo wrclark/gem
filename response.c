@@ -20,7 +20,6 @@ static int write_ssl(SSL *ssl, const char *str) {
 /* as a link, making distinction between other dir's and regular files. */
 static void iterate_dir(const char *path, SSL *ssl) {
     char buffer[4096];
-    char file_path[4096];
     char new_path[512];
     struct dirent **files;
     struct pfs_data pfs;
@@ -55,8 +54,8 @@ static void iterate_dir(const char *path, SSL *ssl) {
         is_dir = (files[qty]->d_type == DT_DIR);
         
         if (!is_dir) {
-            sprintf(file_path, "%s%s", path, files[qty]->d_name);
-            size = filesize(file_path);
+            sprintf(buffer, "%s%s", path, files[qty]->d_name);
+            size = filesize(buffer);
             pfs = pretty_filesize(size);
             if (pfs.type) {
                 sprintf(buffer, "=> %s%s   <FILE> %s <%.2f %s>\n",
@@ -187,8 +186,10 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
     return 0;
 }
 
+/* write a gemini error code to client */
 int resp_error(const char *code, SSL *ssl) {
-    write_ssl(ssl, code);
-    write_ssl(ssl, "\r\n");
-    return 0;
+    char buffer[16];
+    sprintf(buffer, "%s\r\n", code);
+    
+    return write_ssl(ssl, buffer);
 }
