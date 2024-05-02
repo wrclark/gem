@@ -57,6 +57,9 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    /* prevent zombie processes */
+    signal(SIGCHLD, SIG_IGN);
+
     while(1) {
         listen(fd, 10);
 
@@ -148,9 +151,6 @@ CLOSE_CONNECTION:
             SSL_CTX_free(ctx);
             close(client);
             exit(0);
-        } else {
-            /* prevent zombie processes */
-            signal(SIGCHLD,SIG_IGN);
         }
     }
 
