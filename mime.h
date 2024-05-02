@@ -3,7 +3,7 @@
 
 #include "response.h"
 
-char *mime_type_by_ext(char *ext);
-char *mime_type(const char *path);
+const char *mime_type_by_ext(const char *ext);
+const char *mime_type(const char *path);
 
 #endif

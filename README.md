@@ -27,6 +27,9 @@ Supports
 - mime types
 - directory listing
 - chunked file transfer
-- passes most gemini-diagnostics test
+- passes most gemini-diagnostics tests
 
 To use your own domain name you have to replace `/CN=localhost` in `ssl` make target to your domain, eg `example.com` or copy the cert made by certbot (Let's Encrypt/EFF).
+Also change `GEM_HOSTNAME` in `config.h`.
+
+Tip: don't try to serve files with symbols like a space " ", #, & etc. It doesn't work with most browsers.

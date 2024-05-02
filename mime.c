@@ -4,7 +4,7 @@
 #include "request.h"
 
 /* maybe this should be a has map */
-char *mime_type_by_ext(char *ext) {
+const char *mime_type_by_ext(const char *ext) {
 
     if (!ext) {
         return "application/octet-stream";
@@ -204,8 +204,8 @@ char *mime_type_by_ext(char *ext) {
 /* takes a resource string and finds the corresponding */
 /* mime type for its extension */
 /* NULL on error */
-char *mime_type(const char *path) {
-    int length, i, ext;
+const char *mime_type(const char *path) {
+    size_t length, i, ext;
     /* if no extension has been detected by this much */
     /* then treat it as a bin (application/octet-stream) */
     char buf[16] = {0};

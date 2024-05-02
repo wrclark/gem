@@ -8,22 +8,22 @@
 #include "config.h"
 #include "file.h"
 
-char *pfs_kilo = "KB";
-char *pfs_mega = "MB";
-char *pfs_giga = "GB";
+const char *pfs_kilo = "KB";
+const char *pfs_mega = "MB";
+const char *pfs_giga = "GB";
 
 /* convert n bytes to a pretty file size format */
 /* eg 3453554 -> "3.45 MB" */
-struct pfs_data pretty_filesize(size_t siz) {
+struct pfs_data pretty_filesize(const size_t siz) {
     struct pfs_data p;
     if (siz >= 1000000000UL) {
-        p.type = pfs_giga;
+        p.type = (char *)pfs_giga;
         p.value = (float)(siz / 1000000000UL) + ((float)(siz % 1000000000UL))/((float)1000000000UL);
     } else if (siz >= 1000000UL) {
-        p.type = pfs_mega;
+        p.type = (char *)pfs_mega;
         p.value = (float)(siz / 1000000UL) + ((float)(siz % 1000000UL))/((float)1000000UL);
     } else if (siz >= 1000UL) {
-        p.type = pfs_kilo;
+        p.type = (char *)pfs_kilo;
         p.value = (float)(siz / 1000UL) + ((float)(siz % 1000UL))/((float)1000UL);
     } else {
         p.type = NULL;
@@ -45,7 +45,7 @@ size_t filesize(const char *path) {
         return 0;
     }
 
-    return st.st_size;
+    return (size_t)(st.st_size);
 }
 
 /* check if a file is a directory */

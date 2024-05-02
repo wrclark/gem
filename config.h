@@ -24,7 +24,7 @@
 /* index file name */
 #define GEM_INDEX_FILE "index.gmi"
 
-/* */
+/* maximum size of a request */
 #define GEM_URI_MAXSIZ 1024
 
 /* malloc chunk size for transferring files */

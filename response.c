@@ -12,7 +12,7 @@
 
 /* helper */
 static int write_ssl(SSL *ssl, const char *str) {
-    return SSL_write(ssl, str, strlen(str));
+    return SSL_write(ssl, str, (int)strlen(str));
 }
 
 /* iterate (alphanumerically) all of the files but "." and ".." */
@@ -93,7 +93,7 @@ static int file_transfer(const char *path, SSL *ssl) {
 
     err = 1;
 
-    if (!(mime = mime_type(path))) {
+    if (!(mime = (char *)mime_type(path))) {
         puts("mime error");
         return 1;
     }
@@ -119,7 +119,7 @@ static int file_transfer(const char *path, SSL *ssl) {
             goto EXIT;
         }
 
-        if (SSL_write(ssl, buf, n) <= 0) {
+        if (SSL_write(ssl, buf, (int)n) <= 0) {
             goto EXIT;
         }
     }

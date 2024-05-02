@@ -3,6 +3,8 @@ CC=gcc
 CFLAGS=-std=c89 -O3 -W -Wall -Wextra -pedantic -I.
 CFLAGS+=-march=native -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong
 CFLAGS+=-fstack-clash-protection -fcf-protection
+CFLAGS+=-Wshadow -Wpointer-arith -Wcast-align -Wstrict-prototypes
+CFLAGS+=-Wwrite-strings -Wconversion -Wunreachable-code
 CFILES=$(wildcard *.c)
 BIN=gem
 
