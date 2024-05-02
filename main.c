@@ -8,10 +8,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <openssl/ssl.h>
+#include <signal.h>
 
 #include "config.h"
 #include "request.h"
 #include "response.h"
+
 
 int main(int argc, char *argv[]) {
     SSL_CTX *ctx;
@@ -144,6 +146,11 @@ CLOSE_CONNECTION:
             SSL_shutdown(ssl);
             SSL_free(ssl);
             SSL_CTX_free(ctx);
+            close(client);
+            exit(0);
+        } else {
+            /* prevent zombie processes */
+            signal(SIGCHLD,SIG_IGN);
         }
     }
 
