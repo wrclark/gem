@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "request.h"
 #include "config.h"
+#include "request.h"
 
 #define STATE_SCHEME 0
 #define STATE_DOMAIN 1

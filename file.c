@@ -1,12 +1,12 @@
 #define _DEFAULT_SOURCE
+#include <dirent.h>
+#include <openssl/ssl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <dirent.h>
 #include <sys/stat.h>
-#include <openssl/ssl.h>
 
-#include "file.h"
 #include "config.h"
+#include "file.h"
 
 char *pfs_kilo = "KB";
 char *pfs_mega = "MB";

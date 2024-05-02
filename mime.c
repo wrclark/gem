@@ -1,6 +1,7 @@
+#include <string.h>
+
 #include "mime.h"
 #include "request.h"
-#include <string.h>
 
 /* maybe this should be a has map */
 char *mime_type_by_ext(char *ext) {

@@ -1,14 +1,14 @@
 #define _DEFAULT_SOURCE
+#include <dirent.h>
+#include <openssl/ssl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <dirent.h>
 #include <sys/stat.h>
-#include <openssl/ssl.h>
 
-#include "response.h"
-#include "mime.h"
 #include "config.h"
 #include "file.h"
+#include "mime.h"
+#include "response.h"
 
 /* helper */
 static int write_ssl(SSL *ssl, const char *str) {
