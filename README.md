@@ -26,12 +26,11 @@ $ make
 
 Run with `./gem -d capsule`
 
-To use your own domain name you have to replace `/CN=localhost` in the `ssl` make target to your domain.
+To use your own domain name you have to replace `/CN=localhost` in the `ssl` make target to your domain: eg `example.com` becomes `/CN=example.com`.
 
-Eg `example.com` becomes `/CN=example.com`.
+Then you must also specify the domain as the hostname when running the program: `./gem -h "example.com" -d capsule`
 
-Or, you could have Let's Encrypt (certbot) make you a cert and use that instead.
-
+### misc
 
 Tip: don't try to serve files with symbols like a space " ", #, & etc. It doesn't work with most browsers.
 
