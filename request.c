@@ -189,15 +189,15 @@ void request_validate_uri(struct gem_uri *u) {
     }
 
     /* only allow hostname */
-    if (GEM_ONLY_HOSTNAME == 1) {
-        if (strncmp(GEM_HOSTNAME, u->domain, REQUEST_MAX_DOMAIN)) {
+    if (cfg.diffhost) {
+        if (strncmp(cfg.hostname, u->domain, REQUEST_MAX_DOMAIN)) {
             u->error |= REQUEST_ERR_WRONG_DOMAIN;
             return;
         }
     }
 
     /* only allow correct port */
-    if (strlen(u->port) > 0 && atoi(u->port) != GEM_PORT) {
+    if (strlen(u->port) > 0 && atoi(u->port) != cfg.port) {
         u->error |= REQUEST_ERR_PORT;
         return;
     }

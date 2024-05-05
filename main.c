@@ -1,6 +1,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <openssl/ssl.h>
+#include <getopt.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,6 +15,21 @@
 #include "request.h"
 #include "response.h"
 
+struct gem_config cfg;
+
+/* print usage and exit */
+void usage(int argc, char *argv[]) {
+    fprintf(stderr, "Usage:\n%s [OPTIONS]\n", argv[0]);
+    fprintf(stderr, "\t-h [HOSTNAME]   ex: -h \"example.com\"   (localhost default)\n");
+    fprintf(stderr, "\t-p [PORT]       ex: -p 1965            (default)\n");
+    fprintf(stderr, "\t-d [DOC ROOT]   ex: -d \"/var/gemini\"\n");
+    fprintf(stderr, "\t-i [INDEX FILE] ex: -i \"index.gmi\"     (default)\n");
+    fprintf(stderr, "\t-e  enumerate directories without an index file\n");
+    fprintf(stderr, "\t-a  permit requests with a different hostname\n");
+    (void) argc;
+
+    exit(1);
+}
 
 int main(int argc, char *argv[]) {
     SSL_CTX *ctx;
@@ -21,14 +37,71 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in addr;
     struct timeval timeout;
     int fd, client;
-    int opt = 1;
-    int err;
+    int enable = 1;
+    int opt, err;
+    int hset = 0, dset = 0;
+    int pset = 0, iset = 0;
 
     struct gem_uri uri = {0};
     char buffer[GEM_URI_MAXSIZ + 1] = {0};
 
-    (void) argc;
-    (void) argv;
+    while ((opt = getopt(argc, argv, "h:p:d:i:ea")) != -1) {
+        switch (opt) {
+            case 'h':
+                strncpy(cfg.hostname, optarg, GEM_CFG_SIZ);
+                hset = 1;
+                break;
+            case 'p':
+                cfg.port = atoi(optarg);
+                pset = 1;
+                break;
+            case 'd':
+                strncpy(cfg.docroot, optarg, GEM_CFG_SIZ);
+                dset = 1;
+                break;
+            case 'i':
+                strncpy(cfg.index, optarg, GEM_CFG_SIZ);
+                iset = 1;
+                break;
+            case 'e':
+                cfg.enumerate = 1;
+                break;
+            case 'a':
+                cfg.diffhost = 1;
+                break;
+            default:
+                usage(argc, argv);
+        }
+    }
+
+    /* check user input */
+
+    /* port provided as 0 or atoi() failed */
+    if (!cfg.port) {
+        if (pset) {
+            fprintf(stderr, "invalid port\n");
+            usage(argc, argv);
+        }
+
+        cfg.port = 1965;
+    }
+
+    /* doc root not set */
+    if (!dset) {
+        fprintf(stderr, "Error: no document root path specified\n");
+        usage(argc, argv);
+    }
+
+    /* hostname not set */
+    if (!hset) {
+        strncpy(cfg.hostname, "localhost", GEM_CFG_SIZ);
+    }
+
+    /* index file not set */
+    if (!iset) {
+        strncpy(cfg.index, "index.gmi", GEM_CFG_SIZ);
+    }
+
 
     /* timeout CLIENT sockets after 10 seconds */
     timeout.tv_sec = 10;
@@ -41,14 +114,14 @@ int main(int argc, char *argv[]) {
     }
 
     /* useful for quick restarts */
-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof opt) < 0) {
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof enable) < 0) {
         perror("setsockopt(SO_REUSEADDR)");
         close(fd);
         exit(1);
     }
 
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(GEM_PORT);
+    addr.sin_port = htons(cfg.port);
     addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(fd, (struct sockaddr *)&addr, sizeof addr) < 0) {

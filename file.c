@@ -83,7 +83,7 @@ int dir_has_index(const char *path) {
         strcpy(buf + strlen(buf), "/");
     }
 
-    strcpy(buf + strlen(buf), GEM_INDEX_FILE);
+    strcpy(buf + strlen(buf), cfg.index);
     return stat(buf, &st) == 0;
 }
 

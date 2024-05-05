@@ -40,7 +40,7 @@ static void iterate_dir(const char *path, SSL *ssl) {
     }
 
     /* remove docroot */
-    strcpy(new_path, path + strlen(GEM_DOCROOT));
+    strcpy(new_path, path + strlen(cfg.docroot));
 
     if (write_ssl(ssl, "20 text/gemini\r\nIndex\n") <= 0) {
         goto EXIT;
@@ -145,7 +145,7 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
     }
 
     /* append user path to docroot */
-    sprintf(buf, "%s%s", GEM_DOCROOT, u->path);
+    sprintf(buf, "%s%s", cfg.docroot, u->path);
 
     /* if file does not exist */
     if (!file_exists(buf)) {
@@ -165,14 +165,14 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
         index = dir_has_index(buf);
 
         /* no index file present, and dir enumeration is enabled */
-        if (!index && GEM_LIST_DIR) {
+        if (!index && cfg.enumerate) {
             iterate_dir(buf, ssl);
             return 0;
         }
 
         /* index file is present so don't enum dir regardless */
         if (index) {
-            strcpy(buf + strlen(buf), GEM_INDEX_FILE);
+            strcpy(buf + strlen(buf), cfg.index);
         } else {
             /* no dir enum and no file to view, so send error 61 why not */
             resp_error(RESP_STATUS_CERT_NOT_AUTH, ssl);
