@@ -33,3 +33,5 @@ To use your own domain name you have to replace `/CN=localhost` in `ssl` make ta
 Also change `GEM_HOSTNAME` in `config.h`.
 
 Tip: don't try to serve files with symbols like a space " ", #, & etc. It doesn't work with most browsers.
+
+Building on Raspberry Pi? remove `-fcf-protection` cflag

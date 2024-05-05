@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
         client = accept(fd, NULL, NULL);
 
         /* timeout on receive */
-        if (setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, &timeout,sizeof timeout) < 0) {
+        if (setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof timeout) < 0) {
             perror("setsockopt(SO_RCVTIMEO)");
             close(client);
             continue;
@@ -150,7 +150,7 @@ CLOSE_CONNECTION:
             SSL_free(ssl);
             SSL_CTX_free(ctx);
             close(client);
-            exit(0);
+            _exit(0);
         }
     }
 

@@ -3,6 +3,7 @@
 #include <openssl/ssl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 
 #include "config.h"
@@ -120,6 +121,7 @@ static int file_transfer(const char *path, SSL *ssl) {
         }
 
         if (SSL_write(ssl, buf, (int)n) <= 0) {
+            perror("SSL_write()");
             goto EXIT;
         }
     }
