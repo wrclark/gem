@@ -8,9 +8,11 @@ Supports
 - chunked file transfer
 - passes most gemini-diagnostics tests
 
+### build
 To build you may need to install `libssl-dev`
 
 ```sh
+$ sudo apt install libssl-dev
 $ make ssl
 $ make
 ```
@@ -24,12 +26,17 @@ $ make
 -a  permit requests with a different hostname
 ```
 
-Run with `./gem -d capsule`
+Run with `./gem -d capsule -e`
 
-To use your own domain name you have to replace `/CN=localhost` in the `ssl` make target to your domain: eg `example.com` becomes `/CN=example.com`.
+To use your own domain name you have to replace `/CN=localhost` in the `ssl` make target to your domain: eg `example.com` => `/CN=example.com`.
 
-Then you must also specify the domain as the hostname when running the program: `./gem -h "example.com" -d capsule`
+Then you must also specify the domain as the hostname when running the program:
+```sh
+./gem -h "example.com" -d capsule -e
+```
 
+The `-a` flag can be useful for accessing the server over IP (perhaps over LAN) without a DNS name.
+> Note: `-d` must always be specified
 ### misc
 
 Tip: don't try to serve files with symbols like a space " ", #, & etc. It doesn't work with most browsers.

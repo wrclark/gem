@@ -102,7 +102,6 @@ int main(int argc, char *argv[]) {
         strncpy(cfg.index, "index.gmi", GEM_CFG_SIZ);
     }
 
-
     /* timeout CLIENT sockets after 10 seconds */
     timeout.tv_sec = 10;
     timeout.tv_usec = 0;
@@ -121,7 +120,7 @@ int main(int argc, char *argv[]) {
     }
 
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(cfg.port);
+    addr.sin_port = htons((unsigned short)cfg.port);
     addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(fd, (struct sockaddr *)&addr, sizeof addr) < 0) {
