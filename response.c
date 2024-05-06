@@ -48,6 +48,7 @@ static void iterate_dir(const char *path, SSL *ssl) {
 
     while (qty--) {
 
+        /* skip rel files . and .. */
         if (!strcmp(files[qty]->d_name, ".") || !strcmp(files[qty]->d_name, "..")) {
             continue;
         }

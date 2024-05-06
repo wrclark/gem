@@ -201,8 +201,7 @@ const char *mime_type_by_ext(const char *ext) {
     return "application/octet-stream";
 }
 
-/* takes a resource string and finds the corresponding */
-/* mime type for its extension */
+/* find a mime type corresponding to the file's extension */
 /* NULL on error */
 const char *mime_type(const char *path) {
     size_t length, i;
