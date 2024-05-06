@@ -102,6 +102,10 @@ int main(int argc, char *argv[]) {
         strncpy(cfg.index, "index.gmi", GEM_CFG_SIZ);
     }
 
+    if (cfg_validate(&cfg)) {
+        usage(argc, argv);
+    }
+
     /* timeout CLIENT sockets after 10 seconds */
     timeout.tv_sec = 10;
     timeout.tv_usec = 0;

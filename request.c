@@ -5,6 +5,8 @@
 #include "config.h"
 #include "request.h"
 
+extern struct gem_config cfg;
+
 #define STATE_SCHEME 0
 #define STATE_DOMAIN 1
 #define STATE_PORT 2

@@ -11,6 +11,8 @@
 #include "mime.h"
 #include "response.h"
 
+extern struct gem_config cfg;
+
 /* helper */
 static int write_ssl(SSL *ssl, const char *str) {
     return SSL_write(ssl, str, (int)strlen(str));

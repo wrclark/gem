@@ -22,6 +22,6 @@ struct gem_config {
     int diffhost;
 };
 
-extern struct gem_config cfg;
+int cfg_validate(struct gem_config *cfg);
 
 #endif

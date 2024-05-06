@@ -9,6 +9,8 @@
 #include "config.h"
 #include "file.h"
 
+extern struct gem_config cfg;
+
 const char *pfs_kilo = "KB";
 const char *pfs_mega = "MB";
 const char *pfs_giga = "GB";
