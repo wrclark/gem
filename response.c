@@ -26,8 +26,7 @@ static void iterate_dir(const char *path, SSL *ssl) {
     char new_path[512];
     struct dirent **files;
     struct pfs_data pfs;
-    int qty;
-    int is_dir;
+    int qty, is_dir, i;
     size_t size;
 
     if (!path || !ssl) {
@@ -78,6 +77,9 @@ static void iterate_dir(const char *path, SSL *ssl) {
     }
 
 EXIT:
+    for(i=0; i<qty; i++) {
+        free(files[i]);
+    }
     free(files);
 }
 
