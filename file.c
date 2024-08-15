@@ -21,13 +21,13 @@ struct pfs_data pretty_filesize(const size_t siz) {
     struct pfs_data p;
     
     if (siz >= 1000000000UL) {
-        p.type = (char *)pfs_giga;
+        p.type = pfs_giga;
         p.value = (float)siz / 1000000000UL;
     } else if (siz >= 1000000UL) {
-        p.type = (char *)pfs_mega;
+        p.type = pfs_mega;
         p.value = (float)siz / 1000000UL;
     } else if (siz >= 1000UL) {
-        p.type = (char *)pfs_kilo;
+        p.type = pfs_kilo;
         p.value = (float)siz / 1000UL;
     } else {
         p.type = NULL;

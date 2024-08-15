@@ -62,10 +62,10 @@ static void iterate_dir(const char *path, SSL *ssl) {
             pfs = pretty_filesize(size);
             if (pfs.type) {
                 sprintf(buffer, "=> %s%s   <FILE> %s <%.2f %s>\n",
-                    new_path, files[qty]->d_name, files[qty]->d_name, pfs.value, pfs.type);
+                    new_path, files[qty]->d_name, files[qty]->d_name, (double)pfs.value, pfs.type);
             } else {
                 sprintf(buffer, "=> %s%s   <FILE> %s <%.0f B>\n",
-                    new_path, files[qty]->d_name, files[qty]->d_name, pfs.value);
+                    new_path, files[qty]->d_name, files[qty]->d_name, (double)pfs.value);
             }
         } else {
             sprintf(buffer, "=> %s%s/   <DIR> %s/\n", new_path, files[qty]->d_name, files[qty]->d_name);
@@ -86,7 +86,7 @@ EXIT:
 /* attempt to transfer the file over ssl in chunks */
 /* non-zero return means error */
 static int file_transfer(const char *path, SSL *ssl) {
-    char *mime;
+    const char *mime;
     char *buf;
     int err;
     FILE *f;
@@ -99,7 +99,7 @@ static int file_transfer(const char *path, SSL *ssl) {
 
     err = 1;
 
-    if (!(mime = (char *)mime_type(path))) {
+    if (!(mime = mime_type(path))) {
         puts("mime error");
         return 1;
     }

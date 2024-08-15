@@ -3,7 +3,7 @@
 
 /* "pretty file size" */
 struct pfs_data {
-    char *type;
+    const char *type;
     float value;
 };
 

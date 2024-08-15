@@ -18,7 +18,7 @@
 struct gem_config cfg;
 
 /* print usage and exit */
-void usage(int argc, char *argv[]) {
+static void usage(int argc, char *argv[]) {
     fprintf(stderr, "Usage:\n%s [OPTIONS]\n", argv[0]);
     fprintf(stderr, "\t-h [HOSTNAME]   ex: -h \"example.com\"   (localhost default)\n");
     fprintf(stderr, "\t-p [PORT]       ex: -p 1965            (default)\n");
