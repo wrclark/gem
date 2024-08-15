@@ -41,7 +41,7 @@ Then you must also specify the domain as the hostname when running the program:
 The `-a` flag can be useful for accessing the server over IP (perhaps over LAN) without a DNS name. The `-d` flag must always be specified.
 
 #### Raspberry Pi
-Makefile now conditionally includes flags that don't seem to work on the Pi. Below is an example to easily get started, just replace the IP.
+Makefile now conditionally includes flags that don't seem to work on the Pi. Below is an example to easily get started.
 ```sh
 $ sudo apt update && sudo apt install -y libssl-dev
 $ make ssl
