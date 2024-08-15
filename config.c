@@ -6,7 +6,7 @@
 
 /* Validate that the document root path exists and is a directory */
 static int validate_docroot(const char *path) {
-    if (path == NULL || strlen(path) == 0) {
+    if (!path || !strlen(path)) {
         fprintf(stderr, "Document root path is NULL or empty.\n");
         return 0;
     }
@@ -26,12 +26,12 @@ static int validate_docroot(const char *path) {
 
 /* Validate the index file name */
 static int validate_index_file(const char *index) {
-    if (index == NULL || strlen(index) == 0) {
+    if (!index || !strlen(index)) {
         fprintf(stderr, "Index file name is NULL or empty.\n");
         return 0;
     }
 
-    if (strcmp(index, ".") == 0 || strcmp(index, "..") == 0) {
+    if (!strcmp(index, ".") || !strcmp(index, "..")) {
         fprintf(stderr, "Index file name cannot be '.' or '..'.\n");
         return 0;
     }
@@ -41,12 +41,12 @@ static int validate_index_file(const char *index) {
 
 /* Validate the hostname length */
 static int validate_hostname(const char *host) {
-    if (host == NULL || strlen(host) == 0) {
+    if (!host || !strlen(host)) {
         fprintf(stderr, "Hostname is NULL or empty.\n");
         return 0;
     }
 
-    if (strlen(host) < 5) {  /* Assuming minimum hostname length of 5 for example */
+    if (strlen(host) < 5) {
         fprintf(stderr, "Hostname is too short: %s\n", host);
         return 0;
     }
@@ -66,7 +66,7 @@ static int validate_port(int port) {
 
 /* Validate the user-provided configuration */
 int cfg_validate(struct gem_config *cfg) {
-    if (cfg == NULL) {
+    if (!cfg) {
         fprintf(stderr, "Configuration is NULL.\n");
         return 1;
     }
