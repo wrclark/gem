@@ -21,14 +21,21 @@ CFLAGS += -Walloc-zero -Walloca -Wstack-protector
 CFLAGS += -fanalyzer
 
 CFILES = $(wildcard *.c)
+OBJECTS = $(CFILES:.c=.o)
 BIN = gem
 
-all:
-	$(CC) $(CFLAGS) $(CFILES) -o $(BIN) -lssl -lcrypto
+all: $(BIN)
+
+$(BIN): $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) -o $(BIN) -lssl -lcrypto
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 ssl:
 	mkdir -p tls
 	openssl req -x509 -newkey rsa:4096 -keyout tls/server.key -out tls/server.crt -sha256 -days 3650 -nodes -subj '/CN=localhost'
 
 clean:
-	rm -rf $(BIN) tls/
+	rm -rf tls/
+	rm -f $(BIN) $(OBJECTS)
