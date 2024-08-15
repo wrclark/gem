@@ -30,6 +30,7 @@ $ make
 
 Run with `./gem -d capsule -e`
 
+#### SSL cert
 To use your own domain name you have to replace `/CN=localhost` in the `ssl` make target to your domain: eg `example.com` => `/CN=example.com`.
 
 Then you must also specify the domain as the hostname when running the program:
