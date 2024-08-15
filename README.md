@@ -8,6 +8,8 @@ Supports
 - chunked file transfer
 - passes most gemini-diagnostics tests
 
+![Directory listing as seen in Lagrange](.gitea/lagrange.png)
+
 ### build
 To build you may need to install `libssl-dev`
 
