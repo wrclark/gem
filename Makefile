@@ -2,11 +2,17 @@ SHELL := /usr/bin/bash
 CC = gcc
 CFLAGS = -std=c89 -O3 -W -Wall -Wextra -pedantic -I.
 CFLAGS += -march=native -pipe -D_FORTIFY_SOURCE=2 -fstack-protector-strong
-CFLAGS += -fstack-clash-protection -fcf-protection
+CFLAGS += -fstack-clash-protection
 CFLAGS += -Wshadow -Wpointer-arith -Wcast-align -Wstrict-prototypes
 CFLAGS += -Wwrite-strings -Wconversion -Wunreachable-code
 CFLAGS += -flto -funroll-loops -fPIE -pie -Wl,-z,relro,-z,now
 CFLAGS += -fno-strict-aliasing
+
+# include if NOT on a Pi
+ifneq ($(shell uname -m | grep -E '^arm|^aarch64'), aarch64)
+	CFLAGS += -fcf-protection=full
+endif
+
 
 # Additional warnings and static analysis
 CFLAGS += -Wformat=2 -Wformat-overflow=2 -Wformat-signedness

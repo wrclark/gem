@@ -38,13 +38,18 @@ Then you must also specify the domain as the hostname when running the program:
 ./gem -h "example.com" -d capsule -e
 ```
 
-The `-a` flag can be useful for accessing the server over IP (perhaps over LAN) without a DNS name.
-> Note: `-d` must always be specified
-### misc
+The `-a` flag can be useful for accessing the server over IP (perhaps over LAN) without a DNS name. The `-d` flag must always be specified.
 
-Tip: don't try to serve files with symbols like a space " ", #, & etc. It doesn't work with most browsers.
+#### Raspberry Pi
+Makefile now conditionally includes flags that don't seem to work on the Pi. Below is an example to easily get started, just replace the IP.
+```sh
+$ sudo apt update && sudo apt install -y libssl-dev
+$ make ssl
+$ make
+$ ./gem -d capsule -a
+```
 
-Building on Raspberry Pi? remove the `-fcf-protection` CFLAG
+## Misc
 
 Great development tool:
 ```

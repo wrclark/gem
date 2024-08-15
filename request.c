@@ -191,7 +191,7 @@ void request_validate_uri(struct gem_uri *u) {
     }
 
     /* only allow hostname */
-    if (cfg.diffhost) {
+    if (!cfg.diffhost) {
         if (strncmp(cfg.hostname, u->domain, REQUEST_MAX_DOMAIN)) {
             u->error |= REQUEST_ERR_WRONG_DOMAIN;
             return;
