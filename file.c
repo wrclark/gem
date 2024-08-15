@@ -43,11 +43,14 @@ size_t filesize(const char *path) {
     return (path && stat(path, &st) == 0) ? (size_t)st.st_size : 0;
 }
 
+/* check if a file is a directory */
 int file_is_dir(const char *path) {
     struct stat st;
     return (path && stat(path, &st) == 0 && (st.st_mode & S_IFMT) == S_IFDIR);
 }
 
+/* check if a directory contains an index file */
+/* as specified with -i flag, or default as "index.gmi" */
 int dir_has_index(const char *path) {
     char buf[2048];
 
@@ -64,6 +67,7 @@ int dir_has_index(const char *path) {
     return file_exists(buf);
 }
 
+/* check if file exists at all */
 int file_exists(const char *path) {
     struct stat st;
     return (path && stat(path, &st) == 0);
