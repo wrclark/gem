@@ -3,199 +3,74 @@
 #include "mime.h"
 #include "request.h"
 
-/* maybe this should be a has map */
+static const mime_t mimes[] = {
+    {".gmi", "text/gemini"},
+    {".aac", "audio/aac"},
+    {".avif", "image/avif"},
+    {".avi", "video/x-msvideo"},
+    {".azw", "application/vnd.amazon.ebook"},
+    {".bin", "application/octet-stream"},
+    {".bmp", "image/bmp"},
+    {".bz", "application/x-bzip"},
+    {".bz2", "application/x-bzip2"},
+    {".css", "text/css"},
+    {".csv", "text/csv"},
+    {".doc", "application/msword"},
+    {".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
+    {".epub", "application/epub+zip"},
+    {".gz", "application/gzip"},
+    {".gif", "image/gif"},
+    {".htm", "text/html"},
+    {".html", "text/html"},
+    {".jar", "application/java-archive"},
+    {".jpg", "image/jpeg"},
+    {".jpeg", "image/jpeg"},
+    {".js", "text/javascript"},
+    {".json", "application/json"},
+    {".mid", "audio/midi"},
+    {".midi", "audio/x-midi"},
+    {".mp3", "audio/mpeg"},
+    {".mp4", "video/mp4"},
+    {".mpeg", "video/mpeg"},
+    {".png", "image/png"},
+    {".pdf", "application/pdf"},
+    {".ppt", "application/vnd.ms-powerpoint"},
+    {".pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"},
+    {".rar", "application/vnd.rar"},
+    {".sh", "application/x-sh"},
+    {".svg", "image/svg+xml"},
+    {".tar", "application/x-tar"},
+    {".tif", "image/tiff"},
+    {".tiff", "image/tiff"},
+    {".ts", "video/mp2t"},
+    {".txt", "text/plain"},
+    {".wav", "audio/wav"},
+    {".weba", "audio/webm"},
+    {".webm", "video/webm"},
+    {".webp", "image/webp"},
+    {".xhtml", "application/xhtml+xml"},
+    {".xls", "application/vnd.ms-excel"},
+    {".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+    {".xml", "application/xml"},
+    {".zip", "application/zip"},
+    {".7z", "application/x-7z-compressed"}
+};
+
+static const size_t mimes_size = sizeof(mimes) / sizeof(mimes[0]);
+
+
 const char *mime_type_by_ext(const char *ext) {
+    size_t i;
 
     if (!ext) {
         return "application/octet-stream";
     }
 
-    if (!strcmp(ext, ".gmi")) {
-        return "text/gemini";
-    }
-
-    if (!strcmp(ext, ".aac")) {
-        return "audio/aac";
-    }
-
-    if (!strcmp(ext, ".avif")) {
-        return "image/avif";
-    }
-
-    if (!strcmp(ext, ".avi")) {
-        return "video/x-msvideo";
-    }
-
-    if (!strcmp(ext, ".azw")) {
-        return "application/vnd.amazon.ebook";
-    }
-
-    if (!strcmp(ext, ".bin")) {
-        return "application/octet-stream";
-    }
-
-    if (!strcmp(ext, ".bmp")) {
-        return "image/bmp";
-    }
-
-    if (!strcmp(ext, ".bz")) {
-        return "application/x-bzip";
-    }
-
-    if (!strcmp(ext, ".bz2")) {
-        return "application/x-bzip2";
-    }
-
-    if (!strcmp(ext, ".css")) {
-        return "text/css";
-    }
-
-    if (!strcmp(ext, ".csv")) {
-        return "text/csv";
-    }
-
-    if (!strcmp(ext, ".doc")) {
-        return "application/msword";
-    }
-
-    if (!strcmp(ext, ".docx")) {
-        return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    }
-
-    if (!strcmp(ext, ".epub")) {
-        return "application/epub+zip";
-    }
-
-    if (!strcmp(ext, ".gz")) {
-        return "application/gzip";
-    }
-
-    if (!strcmp(ext, ".gif")) {
-        return "image/gif";
-    }
-
-    if (!strcmp(ext, ".htm") || !strcmp(ext, ".html")) {
-        return "text/html";
-    }
-
-    if (!strcmp(ext, ".jar")) {
-        return "application/java-archive";
-    }
-
-    if (!strcmp(ext, ".jpg") || !strcmp(ext, ".jpeg")) {
-        return "image/jpeg";
-    }
-
-    if (!strcmp(ext, ".js")) {
-        return "text/javascript";
-    }
-
-    if (!strcmp(ext, ".json")) {
-        return "application/json";
-    }
-
-    if (!strcmp(ext, ".mid")) {
-        return "audio/midi";
-    }
-
-    if (!strcmp(ext, ".midi")) {
-        return "audio/x-midi";
-    }
-
-    if (!strcmp(ext, ".mp3")) {
-        return "audio/mpeg";
-    }
-
-    if (!strcmp(ext, ".mp4")) {
-        return "video/mp4";
-    }
-
-    if (!strcmp(ext, ".mpeg")) {
-        return "video/mpeg";
-    }
-
-    if (!strcmp(ext, ".png")) {
-        return "image/png";
-    }
-
-    if (!strcmp(ext, ".pdf")) {
-        return "application/pdf";
-    }
-
-    if (!strcmp(ext, ".ppt")) {
-        return "application/vnd.ms-powerpoint";
-    }
-
-    if (!strcmp(ext, ".pptx")) {
-        return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-    }
-
-    if (!strcmp(ext, ".rar")) {
-        return "application/vnd.rar";
-    }
-
-    if (!strcmp(ext, ".sh")) {
-        return "application/x-sh";
-    }
-
-    if (!strcmp(ext, ".svg")) {
-        return "image/svg+xml";
-    }
-
-    if (!strcmp(ext, ".tar")) {
-        return "application/x-tar";
-    }
-
-    if (!strcmp(ext, ".tif") || !strcmp(ext, ".tiff")) {
-        return "image/tiff";
-    }
-
-    if (!strcmp(ext, ".ts")) {
-        return "video/mp2t";
-    }
-
-    if (!strcmp(ext, ".txt")) {
-        return "text/plain";
-    }
-
-    if (!strcmp(ext, ".wav")) {
-        return "audio/wav";
-    }
-
-    if (!strcmp(ext, ".weba")) {
-        return "audio/webm";
-    }
-
-    if (!strcmp(ext, ".webm")) {
-        return "video/webm";
-    }
-
-    if (!strcmp(ext, ".webp")) {
-        return "image/webp";
-    }
-
-    if (!strcmp(ext, ".xhtml")) {
-        return "application/xhtml+xml";
-    }
-
-    if (!strcmp(ext, ".xls")) {
-        return "application/vnd.ms-excel";
-    }
-
-    if (!strcmp(ext, ".xlsx")) {
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-    }
-
-    if (!strcmp(ext, ".xml")) {
-        return "application/xml";
-    }
-
-    if (!strcmp(ext, ".zip")) {
-        return "application/zip";
-    }
-
-    if (!strcmp(ext, ".7z")) {
-        return "application/x-7z-compressed";
+    /* TODO: bsearch */
+    for(i=0; i<mimes_size; i++) {
+        if (!strcmp(ext, mimes[i].ext)) {
+            return mimes[i].mime;
+        }
     }
 
     return "application/octet-stream";
@@ -204,29 +79,20 @@ const char *mime_type_by_ext(const char *ext) {
 /* find a mime type corresponding to the file's extension */
 /* NULL on error */
 const char *mime_type(const char *path) {
-    size_t length, i;
-    /* if no extension has been detected by this much */
-    /* then treat it as a bin (application/octet-stream) */
-    char buf[16] = {0};
+    const char *ext;
 
     if (!path) {
         return NULL;
     }
 
-    /* copy the last 15 chars from path to buf */
-    length = strlen(path);
-    if (length < 16) {
-        strcpy(buf, path);
-    } else {
-        strncpy(buf, path + strlen(path) - 15, 15);
-    }
+    /* Find the last occurrence of '.' in the path */
+    ext = strrchr(path, '.');
     
-    for(i=0; i<16; i++) {
-        if (buf[i] == '.') {
-            return mime_type_by_ext(buf + i);
-        }
+    /* If no extension found, return "application/octet-stream" */
+    if (!ext || ext == path) {
+        return mime_type_by_ext(NULL);
     }
 
-    /* no dot found */
-    return mime_type_by_ext(NULL);
+    /* Pass the extension to mime_type_by_ext function */
+    return mime_type_by_ext(ext);
 }
