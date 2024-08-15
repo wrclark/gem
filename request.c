@@ -167,30 +167,32 @@ START:
     if (!strlen(u->domain)) u->error |= REQUEST_ERR_DOMAIN;
 }
 
-/* check path for "./" and "../" */
-/* also change path "" to "/"    */
-/* sets error field accordingly  */
+/* Check path for "./" and "../" and normalize empty paths to "/" */
+/* Set the error field accordingly */
 void request_validate_uri(struct gem_uri *u) {
-    if (!u) {
+    if (u == NULL || u->path == NULL || u->scheme == NULL || u->domain == NULL || u->port == NULL) {
         return;
     }
 
+    /* Check for "./" and "../" in the path */
     if (strstr(u->path, "../") || strstr(u->path, "./")) {
         u->error |= REQUEST_ERR_PATH;
         return;
     }
 
-    if (strlen(u->path) < 1) {
-        strncpy(u->path, "/", REQUEST_MAX_PATH);
+    /* Change an empty path to "/" */
+    if (!strlen(u->path)) {
+        strncpy(u->path, "/", REQUEST_MAX_PATH - 1);
+        u->path[REQUEST_MAX_PATH - 1] = '\0';
     }
 
-    /* only allow scheme to be gemini */
-    if (strncmp("gemini", u->scheme, REQUEST_MAX_SCHEME)) {
+    /* Only allow the scheme to be "gemini" */
+    if (memcmp("gemini", u->scheme, sizeof("gemini") - 1) || u->scheme[sizeof("gemini") - 1] != '\0') {
         u->error |= REQUEST_ERR_WRONG_SCHEME;
         return;
     }
 
-    /* only allow hostname */
+    /* Only allow the hostname if diffhost is not enabled */
     if (!cfg.diffhost) {
         if (strncmp(cfg.hostname, u->domain, REQUEST_MAX_DOMAIN)) {
             u->error |= REQUEST_ERR_WRONG_DOMAIN;
@@ -198,7 +200,7 @@ void request_validate_uri(struct gem_uri *u) {
         }
     }
 
-    /* only allow correct port */
+    /* Only allow the correct port */
     if (strlen(u->port) > 0 && atoi(u->port) != cfg.port) {
         u->error |= REQUEST_ERR_PORT;
         return;
