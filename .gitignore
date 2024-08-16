@@ -1,4 +1,7 @@
 gem
 *.o
+*.su
+ltrans*
+*.ltrans.su
 tls/
 .vscode/
