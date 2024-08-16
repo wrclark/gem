@@ -1,3 +1,4 @@
+#define _DEFAULT_SOURCE
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <openssl/ssl.h>
@@ -104,6 +105,12 @@ int main(int argc, char *argv[]) {
 
     if (cfg_validate(&cfg)) {
         usage(argc, argv);
+    }
+
+    /* chroot "/" to docroot */
+    if (chroot(cfg.docroot)) {
+        perror("unable to chroot docroot");
+        exit(1);
     }
 
     /* timeout CLIENT sockets after 10 seconds */

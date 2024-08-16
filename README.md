@@ -28,14 +28,16 @@ $ make
 -a  permit requests with a different hostname
 ```
 
-Run with `./gem -d capsule -e`
+Run with `sudo ./gem -d capsule -e`
+
+`sudo` required for `CAP_SYS_CHROOT`
 
 #### SSL cert
 To use your own domain name you have to replace `/CN=localhost` in the `ssl` make target to your domain: eg `example.com` => `/CN=example.com`.
 
 Then you must also specify the domain as the hostname when running the program:
 ```sh
-./gem -h "example.com" -d capsule -e
+sudo ./gem -h "example.com" -d capsule -e
 ```
 
 The `-a` flag can be useful for accessing the server over IP (perhaps over LAN) without a DNS name. The `-d` flag must always be specified.
@@ -46,7 +48,7 @@ Makefile now conditionally includes flags that don't seem to work on the Pi. Bel
 $ sudo apt update && sudo apt install -y libssl-dev
 $ make ssl
 $ make
-$ ./gem -d capsule -a
+$ sudo ./gem -d capsule -a
 ```
 
 ## Misc

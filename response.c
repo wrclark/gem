@@ -23,10 +23,9 @@ static int write_ssl(SSL *ssl, const char *str) {
 /* as a link, making distinction between other dir's and regular files. */
 static void iterate_dir(const char *path, SSL *ssl) {
     char buffer[4096];
-    char new_path[512];
     struct dirent **files;
     struct pfs_data pfs;
-    int qty, qty_old, is_dir, i;
+    int qty, i;
     size_t size;
 
     if (!path || !ssl) {
@@ -40,37 +39,30 @@ static void iterate_dir(const char *path, SSL *ssl) {
         return;
     }
 
-    qty_old = qty; /* to free later */
-
-    /* remove docroot */
-    strcpy(new_path, path + strlen(cfg.docroot));
-
     if (write_ssl(ssl, "20 text/gemini\r\nIndex\n") <= 0) {
         goto EXIT;
     }
 
-    while (qty--) {
+    for(i=0; i<qty; i++) {
 
         /* skip rel files . and .. */
-        if (!strcmp(files[qty]->d_name, ".") || !strcmp(files[qty]->d_name, "..")) {
+        if (!strcmp(files[i]->d_name, ".") || !strcmp(files[i]->d_name, "..")) {
             continue;
         }
-
-        is_dir = (files[qty]->d_type == DT_DIR);
         
-        if (!is_dir) {
-            sprintf(buffer, "%s%s", path, files[qty]->d_name);
+        if (files[i]->d_type != DT_DIR) {
+            sprintf(buffer, "%s%s", path, files[i]->d_name);
             size = filesize(buffer);
             pfs = pretty_filesize(size);
             if (pfs.type) {
                 sprintf(buffer, "=> %s%s   <FILE> %s <%.2f %s>\n",
-                    new_path, files[qty]->d_name, files[qty]->d_name, (double)pfs.value, pfs.type);
+                    path, files[i]->d_name, files[i]->d_name, (double)pfs.value, pfs.type);
             } else {
                 sprintf(buffer, "=> %s%s   <FILE> %s <%.0f B>\n",
-                    new_path, files[qty]->d_name, files[qty]->d_name, (double)pfs.value);
+                    path, files[i]->d_name, files[i]->d_name, (double)pfs.value);
             }
         } else {
-            sprintf(buffer, "=> %s%s/   <DIR> %s/\n", new_path, files[qty]->d_name, files[qty]->d_name);
+            sprintf(buffer, "=> %s%s/   <DIR> %s/\n", path, files[i]->d_name, files[i]->d_name);
         }
 
         if (write_ssl(ssl, buffer) <= 0) {
@@ -79,8 +71,8 @@ static void iterate_dir(const char *path, SSL *ssl) {
     }
 
 EXIT:
-    for(i=0; i<qty_old; i++) {
-        free(files[i]);
+    while (qty--) {
+        free(files[qty]);
     }
     free(files);
 }
@@ -154,8 +146,8 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
         return 3;
     }
 
-    /* append user path to docroot */
-    sprintf(buf, "%s%s", cfg.docroot, u->path);
+    /* copy user-provided path to buf */
+    sprintf(buf, "%s", u->path);
 
     /* if file does not exist */
     if (!file_exists(buf)) {
