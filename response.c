@@ -39,6 +39,7 @@ static void iterate_dir(const char *path, SSL *ssl) {
         return;
     }
 
+    /* write gemini response for gemtext document */
     if (write_ssl(ssl, "20 text/gemini\r\nIndex\n") <= 0) {
         goto EXIT;
     }
@@ -50,7 +51,10 @@ static void iterate_dir(const char *path, SSL *ssl) {
             continue;
         }
         
-        if (files[i]->d_type != DT_DIR) {
+        if (files[i]->d_type == DT_DIR) {
+            sprintf(buffer, "=> %s%s/   <DIR> %s/\n", path, files[i]->d_name, files[i]->d_name);
+        } else {
+            /* path ends with "/" */
             sprintf(buffer, "%s%s", path, files[i]->d_name);
             size = filesize(buffer);
             pfs = pretty_filesize(size);
@@ -61,8 +65,6 @@ static void iterate_dir(const char *path, SSL *ssl) {
                 sprintf(buffer, "=> %s%s   <FILE> %s <%.0f B>\n",
                     path, files[i]->d_name, files[i]->d_name, (double)pfs.value);
             }
-        } else {
-            sprintf(buffer, "=> %s%s/   <DIR> %s/\n", path, files[i]->d_name, files[i]->d_name);
         }
 
         if (write_ssl(ssl, buffer) <= 0) {
