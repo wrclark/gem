@@ -97,19 +97,22 @@ static int file_transfer(const char *path, SSL *ssl) {
         return 3;
     }
 
-    err = 1;
+    err = 1; /* default err */
 
-    if (!(mime = mime_type(path))) {
+    mime = mime_type(path);
+    if (!mime) {
         puts("mime error");
         return 1;
     }
 
-    if (!(f = fopen(path, "r"))) {
+    f = fopen(path, "rb");
+    if (!f) {
         puts("fopen() error");
         return 2;
     }
     
-    if (!(buf = malloc(GEM_XFER_CHUNK_SIZ + 1))) {
+    buf = malloc(GEM_XFER_CHUNK_SIZ);
+    if (!buf) {
         goto EXIT;
     }
 
@@ -160,13 +163,16 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
     /* if file is a directory */
     if (file_is_dir(buf)) {
 
-        /* if it's a directory, and the path does not end in / */
-        /* then append a / */
-        if (buf[strlen(buf) - 1] != '/') {
-            strcpy(buf + strlen(buf), "/");
+        /* Ensure there's enough space to append '/' */
+        if (strlen(buf) < sizeof(buf) - 1) {
+            if (buf[strlen(buf) - 1] != '/') {
+                strcat(buf, "/");
+            }
+        } else {
+            return RESP_FILE_PATH_TOO_LONG;
         }
 
-        /* if path contains index*/
+        /* Check if directory contains an index file */
         index = dir_has_index(buf);
 
         /* no index file present, and dir enumeration is enabled */
@@ -174,12 +180,17 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
             iterate_dir(buf, ssl);
             return 0;
         }
-
+        
         /* index file is present so don't enum dir regardless */
         if (index) {
-            strcpy(buf + strlen(buf), cfg.index);
+            /* Ensure there's enough space to append index file */
+            if (strlen(buf) + strlen(cfg.index) < sizeof(buf)) {
+                strcat(buf, cfg.index);
+            } else {
+                return RESP_FILE_PATH_TOO_LONG;
+            }
         } else {
-            /* no dir enum and no file to view, so send error 61 why not */
+            /* No directory enumeration and no index file, send error */
             resp_error(RESP_STATUS_CERT_NOT_AUTH, ssl);
             return 0;
         }

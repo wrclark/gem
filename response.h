@@ -13,8 +13,9 @@
 #define RESP_STATUS_CERT          "60"
 #define RESP_STATUS_CERT_NOT_AUTH "61"
 
-#define RESP_FILE_NOT_FOUND  (1 << 0)
-#define RESP_FILE_TRANSFER   (1 << 1)
+#define RESP_FILE_NOT_FOUND     (1 << 0)
+#define RESP_FILE_TRANSFER      (1 << 1)
+#define RESP_FILE_PATH_TOO_LONG (1 << 2)
 
 #include <openssl/ssl.h>
 #include "request.h"

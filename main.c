@@ -213,6 +213,9 @@ int main(int argc, char *argv[]) {
                     case RESP_FILE_TRANSFER:
                         puts("file transfer failed");
                     break;
+                    case RESP_FILE_PATH_TOO_LONG:
+                        puts("provided file path too long");
+                        break;
                     default:
                         printf("unknown error: %d\n", err);
                 }
