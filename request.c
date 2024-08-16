@@ -170,7 +170,7 @@ START:
 /* Check path for "./" and "../" and normalize empty paths to "/" */
 /* Set the error field accordingly */
 void request_validate_uri(struct gem_uri *u) {
-    if (u == NULL || u->path == NULL || u->scheme == NULL || u->domain == NULL || u->port == NULL) {
+    if (!u) {
         return;
     }
 
