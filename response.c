@@ -26,7 +26,7 @@ static void iterate_dir(const char *path, SSL *ssl) {
     char new_path[512];
     struct dirent **files;
     struct pfs_data pfs;
-    int qty, is_dir, i;
+    int qty, qty_old, is_dir, i;
     size_t size;
 
     if (!path || !ssl) {
@@ -39,6 +39,8 @@ static void iterate_dir(const char *path, SSL *ssl) {
         printf("scandir() error: %s\n", path);
         return;
     }
+
+    qty_old = qty; /* to free later */
 
     /* remove docroot */
     strcpy(new_path, path + strlen(cfg.docroot));
@@ -77,7 +79,7 @@ static void iterate_dir(const char *path, SSL *ssl) {
     }
 
 EXIT:
-    for(i=0; i<qty; i++) {
+    for(i=0; i<qty_old; i++) {
         free(files[i]);
     }
     free(files);
