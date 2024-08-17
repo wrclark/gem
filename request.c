@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "request.h"
+#include "url.h"
 
 extern struct gem_config cfg;
 
@@ -41,7 +42,11 @@ void request_parse(const char *uri, struct gem_uri *u) {
         return;
     }
 
-    strcpy(request, uri);
+    if (!url_decode(uri, request, 1024) != 0) {
+        u->error |= REQUEST_ERR_TERM;
+        printf("error decoding url: %s\n", uri);
+        return;
+    }
 
     /* request does not end with \r\n, abort .. */
     if (strcmp("\r\n", &request[strlen(request) - 2])) {

@@ -6,7 +6,8 @@
 #define PRIVATE_KEY "tls/server.key"
 
 /* maximum size of a request */
-#define GEM_URI_MAXSIZ 1024
+/* > 1024 because of URL encoding */
+#define GEM_URI_MAXSIZ 4096
 
 /* malloc chunk size for transferring files */
 #define GEM_XFER_CHUNK_SIZ (1 << 14) /* 16KB */

@@ -10,6 +10,7 @@
 #include "file.h"
 #include "mime.h"
 #include "response.h"
+#include "url.h"
 
 extern struct gem_config cfg;
 
@@ -23,6 +24,7 @@ static int write_ssl(SSL *ssl, const char *str) {
 /* as a link, making distinction between other dir's and regular files. */
 static void iterate_dir(const char *path, SSL *ssl) {
     char buffer[4096];
+    char escaped[2048];
     struct dirent **files;
     struct pfs_data pfs;
     int qty, i;
@@ -50,20 +52,24 @@ static void iterate_dir(const char *path, SSL *ssl) {
         if (!strcmp(files[i]->d_name, ".") || !strcmp(files[i]->d_name, "..")) {
             continue;
         }
-        
+
+        sprintf(buffer, "%s%s", path, files[i]->d_name);
+        if (!url_encode(buffer, escaped, 2048) != 0) {
+            fprintf(stderr, "unable to url_encode \"%s\"\n", buffer);
+            goto EXIT;
+        }
+
         if (files[i]->d_type == DT_DIR) {
-            sprintf(buffer, "=> %s%s/  %s/\n", path, files[i]->d_name, files[i]->d_name);
+            sprintf(buffer, "=> %s/  %s/\n", escaped, files[i]->d_name);
         } else {
-            /* path ends with "/" */
-            sprintf(buffer, "%s%s", path, files[i]->d_name);
             size = filesize(buffer);
             pfs = pretty_filesize(size);
             if (pfs.type) {
-                sprintf(buffer, "=> %s%s  %s <%.2f %s>\n",
-                    path, files[i]->d_name, files[i]->d_name, (double)pfs.value, pfs.type);
+                sprintf(buffer, "=> %s  %s <%.2f %s>\n",
+                    escaped, files[i]->d_name, (double)pfs.value, pfs.type);
             } else {
-                sprintf(buffer, "=> %s%s  %s <%.0f B>\n",
-                    path, files[i]->d_name, files[i]->d_name, (double)pfs.value);
+                sprintf(buffer, "=> %s  %s <%.0f B>\n",
+                    escaped, files[i]->d_name, (double)pfs.value);
             }
         }
 
