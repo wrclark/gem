@@ -52,17 +52,17 @@ static void iterate_dir(const char *path, SSL *ssl) {
         }
         
         if (files[i]->d_type == DT_DIR) {
-            sprintf(buffer, "=> %s%s/   <DIR> %s/\n", path, files[i]->d_name, files[i]->d_name);
+            sprintf(buffer, "=> %s%s/  %s/\n", path, files[i]->d_name, files[i]->d_name);
         } else {
             /* path ends with "/" */
             sprintf(buffer, "%s%s", path, files[i]->d_name);
             size = filesize(buffer);
             pfs = pretty_filesize(size);
             if (pfs.type) {
-                sprintf(buffer, "=> %s%s   <FILE> %s <%.2f %s>\n",
+                sprintf(buffer, "=> %s%s  %s <%.2f %s>\n",
                     path, files[i]->d_name, files[i]->d_name, (double)pfs.value, pfs.type);
             } else {
-                sprintf(buffer, "=> %s%s   <FILE> %s <%.0f B>\n",
+                sprintf(buffer, "=> %s%s  %s <%.0f B>\n",
                     path, files[i]->d_name, files[i]->d_name, (double)pfs.value);
             }
         }
