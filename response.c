@@ -64,13 +64,10 @@ static void iterate_dir(const char *path, SSL *ssl) {
         } else {
             size = filesize(buffer);
             pfs = pretty_filesize(size);
-            if (pfs.type) {
-                sprintf(buffer, "=> %s  %s <%.2f %s>\n",
-                    escaped, files[i]->d_name, (double)pfs.value, pfs.type);
-            } else {
-                sprintf(buffer, "=> %s  %s <%.0f B>\n",
-                    escaped, files[i]->d_name, (double)pfs.value);
-            }
+            sprintf(buffer, 
+                pfs.type ? "=> %s  %s <%.2f %s>\n" : "=> %s  %s <%.0f %s>\n",
+                escaped, files[i]->d_name, (double)pfs.value,
+                pfs.type ? pfs.type : "B");
         }
 
         if (write_ssl(ssl, buffer) <= 0) {
