@@ -1,5 +1,0 @@
-# second page
-
-look at the dog picture
-
-=> dog.png    a dog

@@ -1,0 +1,40 @@
+# 🐺 wolf【狼】
+
+
+```wolf ASCII art
+                              __
+                            .d$$b
+                          .' TO$;\
+                         /  : TP._;
+                        / _.;  :Tb|
+                       /   /   ;j$j
+                   _.-"       d$$$$
+                 .' ..       d$$$$;
+                /  /P'      d$$$$P. |\
+               /   "      .d$$$P' |\^"l
+             .'           `T$P^"""""  :
+         ._.'      _.'                ;
+      `-.-".-'-' ._.       _.-"    .-"
+    `.-" _____  ._              .-"
+   -(.g$$$$$$$b.              .'
+     ""^^T$$$P^)            .(:
+       _/  -"  /.'         /:/;
+    ._.'-'`-'  ")/         /;/;
+ `-.-"..--""   " /         /  ;
+.-" ..--""        -'          :
+..--""--.-"         (\      .-(\
+  ..--""              `-\(\/;`
+    _.                      :
+                            ;`-
+                           :\
+                           ;  bug
+```
+>The wolf (Canis lupus; pl.: wolves), also known as the gray wolf or grey wolf, is a large canine native to Eurasia and North America. More than thirty subspecies of Canis lupus have been recognized, including the dog and dingo, though gray wolves, as popularly understood, only comprise naturally-occurring wild subspecies. The wolf is the largest extant member of the family Canidae, and is further distinguished from other Canis species by its less pointed ears and muzzle, as well as a shorter torso and a longer tail. The wolf is nonetheless related closely enough to smaller Canis species, such as the coyote and the golden jackal, to produce fertile hybrids with them. The wolf's fur is usually mottled white, brown, gray, and black, although subspecies in the arctic region may be nearly all white.
+
+>Of all members of the genus Canis, the wolf is most specialized for cooperative game hunting as demonstrated by its physical adaptations to tackling large prey, its more social nature, and its highly advanced expressive behaviour, including individual or group howling. It travels in nuclear families consisting of a mated pair accompanied by their offspring. Offspring may leave to form their own packs on the onset of sexual maturity and in response to competition for food within the pack. Wolves are also territorial, and fights over territory are among the principal causes of mortality. The wolf is mainly a carnivore and feeds on large wild hooved mammals as well as smaller animals, livestock, carrion, and garbage. Single wolves or mated pairs typically have higher success rates in hunting than do large packs. Pathogens and parasites, notably the rabies virus, may infect wolves.
+
+>The global wild wolf population was estimated to be 300,000 in 2003 and is considered to be of Least Concern by the International Union for Conservation of Nature (IUCN). Wolves have a long history of interactions with humans, having been despised and hunted in most pastoral communities because of their attacks on livestock, while conversely being respected in some agrarian and hunter-gatherer societies. Although the fear of wolves exists in many human societies, the majority of recorded attacks on people have been attributed to animals suffering from rabies. Wolf attacks on humans are rare because wolves are relatively few, live away from people, and have developed a fear of humans because of their experiences with hunters, farmers, ranchers, and shepherds. 
+
+=> https://en.wikipedia.org/wiki/Wolf https://en.wikipedia.org/wiki/Wolf
+
+=> . Go back

@@ -1,22 +1,8 @@
-# My capsule
+# gem capsule
 
-Welcome to my gemini capsule
+=> dog.png the dog
 
-```Cool art
-  ▄▀  ▄███▄   █▀▄▀█ ▄█    ▄   ▄█ 
-▄▀    █▀   ▀  █ █ █ ██     █  ██ 
-█ ▀▄  ██▄▄    █ ▄ █ ██ ██   █ ██ 
-█   █ █▄   ▄▀ █   █ ▐█ █ █  █ ▐█ 
- ███  ▀███▀      █   ▐ █  █ █  ▐ 
-                ▀      █   ██    
-```
+Welcome to my gemini capsule for
+=> https://github.com/wrclark/gem.git github.com/wrclark/gem
 
-> quote that sinks in
-
-### Here is a list
-* item 1
-* item 2
-* item 3
-
-=> second.gmi    My second page
-=> demo  demo dir enumeration (run with -e)
+=> misc  misc
