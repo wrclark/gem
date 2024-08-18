@@ -1,0 +1,27 @@
+# 🐧 penguin【ペンギン】
+
+
+```penguin ASCII art
+              . --- .
+            /        \
+           |  O  _  O |
+           |  ./   \. |
+           /  `-._.-'  \
+         .' /         \ `.
+     .-~.-~/           \~-.~-.
+ .-~ ~    |             |    ~ ~-.
+ `- .     |             |     . -'
+      ~ - |             | - ~
+          \             /           unknown
+        ___\           /___
+        ~;_  >- . . -<  _i~
+           `'         `'
+```
+
+>Penguins are a group of aquatic flightless birds from the family Spheniscidae (/sfɪˈnɪsɪdiː, -daɪ/) of the order Sphenisciformes (/sfɪˈnɪsəfɔːrmiːz/). They live almost exclusively in the Southern Hemisphere: only one species, the Galápagos penguin, is found north of the Equator. Highly adapted for life in the ocean water, penguins have countershaded dark and white plumage and flippers for swimming. Most penguins feed on krill, fish, squid and other forms of sea life which they catch with their bills and swallow whole while swimming. A penguin has a spiny tongue and powerful jaws to grip slippery prey.
+
+>They spend about half of their lives on land and the other half in the sea. The largest living species is the emperor penguin (Aptenodytes forsteri): on average, adults are about 1.1 m (3 ft 7 in) tall and weigh 35 kg (77 lb). The smallest penguin species is the little blue penguin (Eudyptula minor), also known as the fairy penguin, which stands around 30–33 cm (12–13 in) tall and weighs 1.2–1.3 kg (2.6–2.9 lb). Today, larger penguins generally inhabit colder regions, and smaller penguins inhabit regions with temperate or tropical climates. Some prehistoric penguin species were enormous: as tall or heavy as an adult human. There was a great diversity of species in subantarctic regions, and at least one giant species in a region around 2,000 km south of the equator 35 mya, during the Late Eocene, a climate decidedly warmer than today. 
+
+=> https://en.wikipedia.org/wiki/Penguin https://en.wikipedia.org/wiki/Penguin
+
+=> . Go back

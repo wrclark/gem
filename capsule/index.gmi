@@ -19,3 +19,4 @@ Welcome to my gemini capsule
 * item 3
 
 => second.gmi    My second page
+=> demo  demo dir enumeration (run with -e)
