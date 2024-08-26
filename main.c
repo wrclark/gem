@@ -15,22 +15,12 @@
 #include "config.h"
 #include "request.h"
 #include "response.h"
+#include "file.h"
 
 struct gem_config cfg;
 
-/* print usage and exit */
-static void usage(int argc, char *argv[]) {
-    fprintf(stderr, "Usage:\n%s [OPTIONS]\n", argv[0]);
-    fprintf(stderr, "\t-h [HOSTNAME]   ex: -h \"example.com\"   (localhost default)\n");
-    fprintf(stderr, "\t-p [PORT]       ex: -p 1965            (default)\n");
-    fprintf(stderr, "\t-d [DOC ROOT]   ex: -d \"/var/gemini\"\n");
-    fprintf(stderr, "\t-i [INDEX FILE] ex: -i \"index.gmi\"     (default)\n");
-    fprintf(stderr, "\t-e  enumerate directories without an index file\n");
-    fprintf(stderr, "\t-a  permit requests with a different hostname\n");
-    (void) argc;
-
-    exit(1);
-}
+static void usage(char *argv[]);
+static void startup_check(void);
 
 int main(int argc, char *argv[]) {
     SSL_CTX *ctx;
@@ -71,7 +61,7 @@ int main(int argc, char *argv[]) {
                 cfg.diffhost = 1;
                 break;
             default:
-                usage(argc, argv);
+                usage(argv);
         }
     }
 
@@ -81,7 +71,7 @@ int main(int argc, char *argv[]) {
     if (!cfg.port) {
         if (pset) {
             fprintf(stderr, "invalid port\n");
-            usage(argc, argv);
+            usage(argv);
         }
 
         cfg.port = 1965;
@@ -90,7 +80,7 @@ int main(int argc, char *argv[]) {
     /* doc root not set */
     if (!dset) {
         fprintf(stderr, "Error: no document root path specified\n");
-        usage(argc, argv);
+        usage(argv);
     }
 
     /* hostname not set */
@@ -104,7 +94,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (cfg_validate(&cfg)) {
-        usage(argc, argv);
+        usage(argv);
     }
 
     /* chroot "/" to docroot */
@@ -112,6 +102,9 @@ int main(int argc, char *argv[]) {
         perror("unable to chroot docroot");
         exit(1);
     }
+
+    /* check ssl/tls files */
+    startup_check();
 
     /* timeout CLIENT sockets after 10 seconds */
     timeout.tv_sec = 10;
@@ -242,4 +235,24 @@ CLOSE_CONNECTION:
 
     exit(0);
 
+}
+
+/* print usage and exit */
+static void usage(char *argv[]) {
+    fprintf(stderr, "Usage:\n%s [OPTIONS]\n", argv[0]);
+    fprintf(stderr, "\t-h [HOSTNAME]   ex: -h \"example.com\"   (localhost default)\n");
+    fprintf(stderr, "\t-p [PORT]       ex: -p 1965            (default)\n");
+    fprintf(stderr, "\t-d [DOC ROOT]   ex: -d \"/var/gemini\"\n");
+    fprintf(stderr, "\t-i [INDEX FILE] ex: -i \"index.gmi\"     (default)\n");
+    fprintf(stderr, "\t-e  enumerate directories without an index file\n");
+    fprintf(stderr, "\t-a  permit requests with a different hostname\n");
+
+    exit(1);
+}
+
+static void startup_check(void) {
+    if (!file_exists(PUBLIC_KEY_PATH) || !file_exists(PRIVATE_KEY_PATH)) {
+        fprintf(stderr, "unable to find ssl keys\n");
+        exit (1);
+    }
 }
