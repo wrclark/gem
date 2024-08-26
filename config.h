@@ -16,6 +16,9 @@
 #define ENABLE_CHARSET_LOOKUP 1
 #define ENABLE_LANG_LOOKUP 1
 
+/* when doing a charset/lang lookup.. */
+/* if no .lang/charset file is found, send out defaults ? */
+#define GEM_USE_DEFAULT_META 1
 #define GEM_DEFAULT_CHARSET "utf-8"
 #define GEM_DEFAULT_LANG "en"
 

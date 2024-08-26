@@ -26,8 +26,7 @@ static void iterate_dir(const char *path, SSL *ssl) {
     char buffer[4096];
     char escaped[2048];
     char header[256] = {0};
-    char charset[32] = {0};
-    char lang[32] = {0};
+    char meta[32] = {0};
     struct dirent **files;
     struct pfs_data pfs;
     int qty, i;
@@ -48,20 +47,31 @@ static void iterate_dir(const char *path, SSL *ssl) {
     sprintf(header, "20 text/gemini");
 
     if (ENABLE_CHARSET_LOOKUP) {
-        if (file_read_dir_meta(path, ".charset", charset, 32) != 0) {
-            strncpy(charset, GEM_DEFAULT_CHARSET, 32);
+        memset(meta, 0, 32);
+        i = file_read_dir_meta(path, ".charset", meta, 32);
+        if (i == 0) {
+            strcat(header, "; charset=");
+            strcat(header, meta);
+        } else if (GEM_USE_DEFAULT_META) {
+            /* file read failed but can use default */
+            strncpy(meta, GEM_DEFAULT_CHARSET, 32);
+            strcat(header, "; charset=");
+            strcat(header, meta);
         }
-        strcat(header, "; charset=");
-        strcat(header, charset);
     }
 
     if (ENABLE_LANG_LOOKUP) {
-        if (file_read_dir_meta(path, ".lang", lang, 32) != 0) {
-            strncpy(lang, GEM_DEFAULT_LANG, 32);
+        memset(meta, 0, 32);
+        i = file_read_dir_meta(path, ".lang", meta, 32);
+        if (i == 0) {
+            strcat(header, "; lang=");
+            strcat(header, meta);
+        } else if (GEM_USE_DEFAULT_META) {
+            /* file read failed but can use default */
+            strncpy(meta, GEM_DEFAULT_LANG, 32);
+            strcat(header, "; lang=");
+            strcat(header, meta);
         }
-
-        strcat(header, "; lang=");
-        strcat(header, lang);
     }
 
     strcat(header, "\r\nIndex\n");
@@ -117,12 +127,11 @@ EXIT:
 static int file_transfer(const char *path, SSL *ssl) {
     const char *mime;
     char *buf;
-    int err;
+    int err, i;
     FILE *f;
     size_t n;
     char header[256] = {0};
-    char charset[32]= {0};
-    char lang[32] = {0};
+    char meta[32] = {0};
 
     if (!path || !ssl) {
         return 3;
@@ -150,20 +159,31 @@ static int file_transfer(const char *path, SSL *ssl) {
     sprintf(header, "20 %s", mime);
 
     if (ENABLE_CHARSET_LOOKUP) {
-        if (file_read_dir_meta(path, ".charset", charset, 32) != 0) {
-            strncpy(charset, GEM_DEFAULT_CHARSET, 32);
+        memset(meta, 0, 32);
+        i = file_read_dir_meta(path, ".charset", meta, 32);
+        if (i == 0) {
+            strcat(header, "; charset=");
+            strcat(header, meta);
+        } else if (GEM_USE_DEFAULT_META) {
+            /* file read failed but can use default */
+            strncpy(meta, GEM_DEFAULT_CHARSET, 32);
+            strcat(header, "; charset=");
+            strcat(header, meta);
         }
-        strcat(header, "; charset=");
-        strcat(header, charset);
     }
 
     if (ENABLE_LANG_LOOKUP) {
-        if (file_read_dir_meta(path, ".lang", lang, 32) != 0) {
-            strncpy(lang, GEM_DEFAULT_LANG, 32);
+        memset(meta, 0, 32);
+        i = file_read_dir_meta(path, ".lang", meta, 32);
+        if (i == 0) {
+            strcat(header, "; lang=");
+            strcat(header, meta);
+        } else if (GEM_USE_DEFAULT_META) {
+            /* file read failed but can use default */
+            strncpy(meta, GEM_DEFAULT_LANG, 32);
+            strcat(header, "; lang=");
+            strcat(header, meta);
         }
-
-        strcat(header, "; lang=");
-        strcat(header, lang);
     }
 
     strcat(header, "\r\n");
