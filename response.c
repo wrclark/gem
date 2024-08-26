@@ -125,7 +125,7 @@ EXIT:
 /* attempt to transfer the file over ssl in chunks */
 /* non-zero return means error */
 static int file_transfer(const char *path, SSL *ssl) {
-    const char *mime;
+    const mime_t *mime;
     char *buf;
     int err, i;
     FILE *f;
@@ -156,9 +156,9 @@ static int file_transfer(const char *path, SSL *ssl) {
         goto EXIT;
     }
 
-    sprintf(header, "20 %s", mime);
+    sprintf(header, "20 %s", mime->mime);
 
-    if (ENABLE_CHARSET_LOOKUP) {
+    if (ENABLE_CHARSET_LOOKUP && mime->type & MIME_TYPE_TEXT) {
         memset(meta, 0, 32);
         i = file_read_dir_meta(path, ".charset", meta, 32);
         if (i == 0) {
@@ -172,7 +172,7 @@ static int file_transfer(const char *path, SSL *ssl) {
         }
     }
 
-    if (ENABLE_LANG_LOOKUP) {
+    if (ENABLE_LANG_LOOKUP && mime->type & MIME_TYPE_TEXT) {
         memset(meta, 0, 32);
         i = file_read_dir_meta(path, ".lang", meta, 32);
         if (i == 0) {
