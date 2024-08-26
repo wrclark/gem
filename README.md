@@ -43,6 +43,11 @@ Then you must also specify the domain as the hostname when running the program:
 
 The `-a` flag can be useful for accessing the server over IP (perhaps over LAN) without a DNS name. The `-d` flag must always be specified.
 
+#### meta header lang/charset attribute
+To include these attributes in the meta header just create a `.lang` file with the language code, example; `en-GB`. Same with charset: `.charset` -- example: `utf-8`. Also make sure it is enabled (`1`) in `config.h`.
+
+These 'rules' apply for all the files in that directory.
+
 #### Raspberry Pi
 Makefile now conditionally includes flags that don't seem to work on the Pi. Below is an example to easily get started.
 ```sh
