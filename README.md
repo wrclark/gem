@@ -7,6 +7,7 @@ Supports
 - directory listing
 - chunked file transfer
 - passes most gemini-diagnostics tests
+- user-defined charset/lang meta attributes
 
 ![Directory listing as seen in Lagrange](.gitea/lagrange.png)
 
