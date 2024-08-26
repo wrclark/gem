@@ -48,6 +48,30 @@ To include these attributes in the meta header just create a `.lang` file with t
 
 These 'rules' apply for all the files in that directory.
 
+```
+capsule/
+├── .charset      <--- "utf-8"
+├── dog.png
+├── index.gmi
+├── .lang         <--- "en-GB"
+└── misc
+    ├── 🦊🐦🦉🐞🦓
+    │   ├── 🦩.gmi
+    │   ├── 🐅.gmi
+    │   ├── 🐧.gmi
+    │   ├── 🐬.gmi
+    │   └── 🐺.gmi
+    ├── jp
+    │   ├── .charset      <--- "Shift_JIS"
+    │   ├── .lang         <--- "ja"
+    │   └── samurai_text_shift_jis.txt
+    └── міжнародний
+        ├── Sultan'ın garaj uzmanı
+        ├── документ на русском языке.txt
+        ├── คำสารภาพ
+        └── 中国
+```
+
 #### Raspberry Pi
 Makefile now conditionally includes flags that don't seem to work on the Pi. Below is an example to easily get started.
 ```sh
