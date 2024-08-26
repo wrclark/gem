@@ -25,9 +25,9 @@ static int write_ssl(SSL *ssl, const char *str) {
 static void iterate_dir(const char *path, SSL *ssl) {
     char buffer[4096];
     char escaped[2048];
-    char header[256];
-    char charset[32];
-    char lang[32];
+    char header[256] = {0};
+    char charset[32] = {0};
+    char lang[32] = {0};
     struct dirent **files;
     struct pfs_data pfs;
     int qty, i;
@@ -120,9 +120,9 @@ static int file_transfer(const char *path, SSL *ssl) {
     int err;
     FILE *f;
     size_t n;
-    char header[256];
-    char charset[32];
-    char lang[32];
+    char header[256] = {0};
+    char charset[32]= {0};
+    char lang[32] = {0};
 
     if (!path || !ssl) {
         return 3;
