@@ -12,5 +12,7 @@ size_t filesize(const char *path);
 int file_is_dir(const char *path);
 int dir_has_index(const char *path);
 int file_exists(const char *path);
+int file_read_dir_meta(const char *path, const char *file, char *buf, const size_t bufsiz);
+
 
 #endif

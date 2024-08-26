@@ -25,6 +25,9 @@ static int write_ssl(SSL *ssl, const char *str) {
 static void iterate_dir(const char *path, SSL *ssl) {
     char buffer[4096];
     char escaped[2048];
+    char header[256];
+    char charset[32];
+    char lang[32];
     struct dirent **files;
     struct pfs_data pfs;
     int qty, i;
@@ -42,15 +45,42 @@ static void iterate_dir(const char *path, SSL *ssl) {
     }
 
     /* write gemini response for gemtext document */
-    if (write_ssl(ssl, "20 text/gemini\r\nIndex\n") <= 0) {
+    sprintf(header, "20 text/gemini");
+
+    if (ENABLE_CHARSET_LOOKUP) {
+        if (file_read_dir_meta(path, ".charset", charset, 32) != 0) {
+            strncpy(charset, GEM_DEFAULT_CHARSET, 32);
+        }
+        strcat(header, "; charset=");
+        strcat(header, charset);
+    }
+
+    if (ENABLE_LANG_LOOKUP) {
+        if (file_read_dir_meta(path, ".lang", lang, 32) != 0) {
+            strncpy(lang, GEM_DEFAULT_LANG, 32);
+        }
+
+        strcat(header, "; lang=");
+        strcat(header, lang);
+    }
+
+    strcat(header, "\r\nIndex\n");
+
+    if (write_ssl(ssl, header) <= 0) {
         goto EXIT;
     }
 
     for(i=0; i<qty; i++) {
 
-        /* skip rel files . and .. */
-        if (!strcmp(files[i]->d_name, ".") || !strcmp(files[i]->d_name, "..")) {
-            continue;
+        if (!ENUMERATE_DOT_FILES) {
+            if (files[i]->d_name[0] == '.') {
+                continue;
+            }
+        } else {
+            /* skip rel files . and .. */
+            if (!strcmp(files[i]->d_name, ".") || !strcmp(files[i]->d_name, "..")) {
+                continue;
+            }
         }
 
         sprintf(buffer, "%s%s", path, files[i]->d_name);
@@ -91,6 +121,8 @@ static int file_transfer(const char *path, SSL *ssl) {
     FILE *f;
     size_t n;
     char header[256];
+    char charset[32];
+    char lang[32];
 
     if (!path || !ssl) {
         return 3;
@@ -115,7 +147,27 @@ static int file_transfer(const char *path, SSL *ssl) {
         goto EXIT;
     }
 
-    sprintf(header, "20 %s\r\n", mime);
+    sprintf(header, "20 %s", mime);
+
+    if (ENABLE_CHARSET_LOOKUP) {
+        if (file_read_dir_meta(path, ".charset", charset, 32) != 0) {
+            strncpy(charset, GEM_DEFAULT_CHARSET, 32);
+        }
+        strcat(header, "; charset=");
+        strcat(header, charset);
+    }
+
+    if (ENABLE_LANG_LOOKUP) {
+        if (file_read_dir_meta(path, ".lang", lang, 32) != 0) {
+            strncpy(lang, GEM_DEFAULT_LANG, 32);
+        }
+
+        strcat(header, "; lang=");
+        strcat(header, lang);
+    }
+
+    strcat(header, "\r\n");
+   
     if (write_ssl(ssl, header) <= 0) {
         goto EXIT;
     }

@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include "config.h"
 #include "file.h"
@@ -71,4 +73,70 @@ int dir_has_index(const char *path) {
 int file_exists(const char *path) {
     struct stat st;
     return (path && stat(path, &st) == 0);
+}
+
+/* read N bytes from a file */
+static int file_read_n(const char *path, char *buf, const size_t siz) {
+    int fd;
+    size_t bytes;
+
+    fd = open(path, O_RDONLY);
+    if (fd == -1) {
+        fprintf(stderr, "unable to open %s\n", path);
+        return 1;
+    }
+
+    bytes = (size_t)read(fd, buf, siz);
+    if (bytes == (size_t)-1) {
+        fprintf(stderr, "err reading %s\n", path);
+        return 1;
+    }
+
+    if (close(fd) == -1) {
+        fprintf(stderr, "failed close file %s\n", path);
+        return 1;
+    }
+
+    return 0;
+
+}
+
+/* takes a path ex: "/main/en-US/hello.gmi"        */
+/* finds the base directory of the file            */
+/* ex: "/main/en-US/hello.gmi" -> "/main/en-US/"   */
+/* ex: "/main/asdsa.txt" -> "/main/"               */
+/* ex: "/index.gmi" -> "/"                         */
+/* ex: "/" -> "/"                                  */
+/* checks if this directory contains a file (arg2) */
+/* if so, writes <=n bytes of this file to a dest buffer and returns 0 */
+/* if not, returns 1 */
+int file_read_dir_meta(const char *path, const char *file, char *buf, const size_t bufsiz) {
+    char dir_buf[512]= {0};
+    size_t dir_length;
+    char *slash;
+
+    if (!path || !file || !buf) {
+        return 1;
+    }
+
+    if (!strcmp(path, "/") || path[strlen(path)-1] == '/') {
+        strncpy(dir_buf, path, 512);
+        strcat(dir_buf, file);
+    } else {
+        slash = strrchr(path, '/');
+        dir_length = (size_t)(slash - path +1);
+        strncpy(dir_buf, path, dir_length);
+        strcat(dir_buf, file);
+    }
+
+    /* check if file exists */
+    if (!file_exists(dir_buf)) {
+        return 1;
+    }
+
+    if (file_read_n(dir_buf, buf, bufsiz) != 0) {
+        return 1;
+    }
+
+    return 0;
 }
