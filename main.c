@@ -170,8 +170,8 @@ int main(int argc, char *argv[]) {
             ssl = SSL_new(ctx);
             SSL_set_fd(ssl, client);
 
-            SSL_use_certificate_chain_file(ssl, PUBLIC_KEY);
-            SSL_use_PrivateKey_file(ssl, PRIVATE_KEY, SSL_FILETYPE_PEM);
+            SSL_use_certificate_chain_file(ssl, PUBLIC_KEY_PATH);
+            SSL_use_PrivateKey_file(ssl, PRIVATE_KEY_PATH, SSL_FILETYPE_PEM);
 
             if (SSL_accept(ssl) != 1) {
                 goto CLOSE_CONNECTION;

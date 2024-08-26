@@ -2,8 +2,8 @@
 #define CONFIG_H
 
 /* SSL/TLS */
-#define PUBLIC_KEY "tls/server.crt"
-#define PRIVATE_KEY "tls/server.key"
+#define PUBLIC_KEY_PATH  "tls/server.crt"
+#define PRIVATE_KEY_PATH "tls/server.key"
 
 /* maximum size of a request */
 /* > 1024 because of URL encoding */
