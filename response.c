@@ -48,8 +48,7 @@ static void iterate_dir(const char *path, SSL *ssl) {
 
     if (ENABLE_CHARSET_LOOKUP) {
         memset(meta, 0, 32);
-        i = file_read_dir_meta(path, ".charset", meta, 32);
-        if (i == 0) {
+        if (!file_read_dir_meta(path, ".charset", meta, 32)) {
             strcat(header, "; charset=");
             strcat(header, meta);
         } else if (GEM_USE_DEFAULT_META) {
@@ -62,8 +61,7 @@ static void iterate_dir(const char *path, SSL *ssl) {
 
     if (ENABLE_LANG_LOOKUP) {
         memset(meta, 0, 32);
-        i = file_read_dir_meta(path, ".lang", meta, 32);
-        if (i == 0) {
+        if (!file_read_dir_meta(path, ".lang", meta, 32)) {
             strcat(header, "; lang=");
             strcat(header, meta);
         } else if (GEM_USE_DEFAULT_META) {
@@ -127,7 +125,7 @@ EXIT:
 static int file_transfer(const char *path, SSL *ssl) {
     const mime_t *mime;
     char *buf;
-    int err, i;
+    int err;
     FILE *f;
     size_t n;
     char header[256] = {0};
@@ -160,8 +158,7 @@ static int file_transfer(const char *path, SSL *ssl) {
 
     if (ENABLE_CHARSET_LOOKUP && mime->type & MIME_TYPE_TEXT) {
         memset(meta, 0, 32);
-        i = file_read_dir_meta(path, ".charset", meta, 32);
-        if (i == 0) {
+        if (!file_read_dir_meta(path, ".charset", meta, 32)) {
             strcat(header, "; charset=");
             strcat(header, meta);
         } else if (GEM_USE_DEFAULT_META) {
@@ -174,8 +171,7 @@ static int file_transfer(const char *path, SSL *ssl) {
 
     if (ENABLE_LANG_LOOKUP && mime->type & MIME_TYPE_TEXT) {
         memset(meta, 0, 32);
-        i = file_read_dir_meta(path, ".lang", meta, 32);
-        if (i == 0) {
+        if (!file_read_dir_meta(path, ".lang", meta, 32)) {
             strcat(header, "; lang=");
             strcat(header, meta);
         } else if (GEM_USE_DEFAULT_META) {
