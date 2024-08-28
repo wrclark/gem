@@ -123,34 +123,30 @@ EXIT:
 /* attempt to transfer the file over ssl in chunks */
 /* non-zero return means error */
 static int file_transfer(const char *path, SSL *ssl) {
+    char header[256] = {0};
+    char meta[32] = {0};
     const mime_t *mime;
     char *buf;
     int err;
     FILE *f;
     size_t n;
-    char header[256] = {0};
-    char meta[32] = {0};
-
-    if (!path || !ssl) {
-        return 3;
-    }
 
     err = 1; /* default err */
 
-    mime = mime_type(path);
-    if (!mime) {
-        puts("mime error");
+
+    if (!path || !ssl) {
         return 1;
     }
 
-    f = fopen(path, "rb");
-    if (!f) {
-        puts("fopen() error");
-        return 2;
+    if (!(mime = mime_type(path))) {
+        return 1;
+    }
+
+    if (!(f = fopen(path, "rb"))) {
+        return 1;
     }
     
-    buf = malloc(GEM_XFER_CHUNK_SIZ);
-    if (!buf) {
+    if (!(buf = malloc(GEM_XFER_CHUNK_SIZ))) {
         goto EXIT;
     }
 
