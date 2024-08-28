@@ -85,14 +85,11 @@ const mime_t *mime_type(const char *path) {
         return NULL;
     }
 
-    /* Find the last occurrence of '.' in the path */
     ext = strrchr(path, '.');
     
-    /* If no extension found, return "application/octet-stream" */
     if (!ext || ext == path) {
         return mime_type_by_ext(NULL);
     }
 
-    /* Pass the extension to mime_type_by_ext function */
     return mime_type_by_ext(ext);
 }

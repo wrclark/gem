@@ -172,20 +172,18 @@ START:
     if (!strlen(u->domain)) u->error |= REQUEST_ERR_DOMAIN;
 }
 
-/* Check path for "./" and "../" and normalize empty paths to "/" */
-/* Set the error field accordingly */
+/* check path for "./" and "../" and normalize empty paths to "/" */
+/* set the error field accordingly */
 void request_validate_uri(struct gem_uri *u) {
     if (!u) {
         return;
     }
 
-    /* Check for "./" and "../" in the path */
     if (strstr(u->path, "../") || strstr(u->path, "./")) {
         u->error |= REQUEST_ERR_PATH;
         return;
     }
 
-    /* Change an empty path to "/" */
     if (!strlen(u->path)) {
         strncpy(u->path, "/", REQUEST_MAX_PATH - 1);
         u->path[REQUEST_MAX_PATH - 1] = '\0';
@@ -197,7 +195,7 @@ void request_validate_uri(struct gem_uri *u) {
         return;
     }
 
-    /* Only allow the hostname if diffhost is not enabled */
+    /* only allow the hostname if diffhost is not enabled */
     if (!cfg.diffhost) {
         if (strncmp(cfg.hostname, u->domain, REQUEST_MAX_DOMAIN)) {
             u->error |= REQUEST_ERR_WRONG_DOMAIN;
@@ -205,7 +203,6 @@ void request_validate_uri(struct gem_uri *u) {
         }
     }
 
-    /* Only allow the correct port */
     if (strlen(u->port) > 0 && atoi(u->port) != cfg.port) {
         u->error |= REQUEST_ERR_PORT;
         return;

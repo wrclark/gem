@@ -218,15 +218,13 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
     /* copy user-provided path to buf */
     sprintf(buf, "%s", u->path);
 
-    /* if file does not exist */
     if (!file_exists(buf)) {
         return RESP_FILE_NOT_FOUND;
     }
 
-    /* if file is a directory */
     if (file_is_dir(buf)) {
 
-        /* Ensure there's enough space to append '/' */
+        /* ensure there's enough space to append '/' */
         if (strlen(buf) < sizeof(buf) - 1) {
             if (buf[strlen(buf) - 1] != '/') {
                 strcat(buf, "/");
@@ -235,7 +233,7 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
             return RESP_FILE_PATH_TOO_LONG;
         }
 
-        /* Check if directory contains an index file */
+        /* check if directory contains an index file */
         index = dir_has_index(buf);
 
         /* no index file present, and dir enumeration is enabled */
@@ -246,14 +244,14 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl) {
         
         /* index file is present so don't enum dir regardless */
         if (index) {
-            /* Ensure there's enough space to append index file */
+            /* ensure there's enough space to append index file */
             if (strlen(buf) + strlen(cfg.index) < sizeof(buf)) {
                 strcat(buf, cfg.index);
             } else {
                 return RESP_FILE_PATH_TOO_LONG;
             }
         } else {
-            /* No directory enumeration and no index file, send error */
+            /* no directory enumeration and no index file, send error */
             resp_error(RESP_STATUS_CERT_NOT_AUTH, ssl);
             return 0;
         }
