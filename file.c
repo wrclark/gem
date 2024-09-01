@@ -112,7 +112,7 @@ static int file_read_n(const char *path, char *buf, const size_t siz) {
 /* if not, returns 1 */
 int file_read_dir_meta(const char *path, const char *file, char *buf, const size_t bufsiz) {
     char dir_buf[512]= {0};
-    size_t dir_length;
+    size_t dir_length, i;
     char *slash;
 
     if (!path || !file || !buf) {
@@ -136,6 +136,13 @@ int file_read_dir_meta(const char *path, const char *file, char *buf, const size
 
     if (file_read_n(dir_buf, buf, bufsiz) != 0) {
         return 1;
+    }
+
+    /* trim newline at the end */
+    for(i=bufsiz-1; i; i--) {
+        if (buf[i] == '\n') {
+            buf[i] = '\0';
+        }
     }
 
     return 0;

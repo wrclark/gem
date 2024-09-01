@@ -48,7 +48,6 @@ The `-a` flag can be useful for accessing the server over IP (perhaps over LAN) 
 To include these attributes in the meta header just create a `.lang` file with the language code, example; `en-GB`. Same with charset: `.charset` -- example: `utf-8`. Also make sure it is enabled (`1`) in `config.h`.
 
 These 'rules' apply for all the files in that directory.
-> `.lang` and `.charset` must not end in a `\n` character.
 
 ```
 capsule/
