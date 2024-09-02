@@ -36,3 +36,4 @@ void request_validate_uri(struct gem_uri *u);
 void request_print_uri(struct gem_uri *u);
 
 #endif
+

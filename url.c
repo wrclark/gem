@@ -60,3 +60,4 @@ int url_decode(const char *user, char *buffer, const size_t size) {
     buffer[j] = '\0'; /* null-terminate the decoded string */
     return j < size;
 }
+

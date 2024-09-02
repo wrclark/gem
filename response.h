@@ -24,3 +24,4 @@ int resp_serve_file(struct gem_uri *u, SSL *ssl);
 int resp_error(const char *code, SSL *ssl);
 
 #endif
+

@@ -20,3 +20,4 @@ const mime_t *mime_type_by_ext(const char *ext);
 const mime_t *mime_type(const char *path);
 
 #endif
+

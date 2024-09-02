@@ -8,3 +8,4 @@ int url_encode(const char *user, char *buffer, const size_t size);
 int url_decode(const char *user, char *buffer, const size_t size);
 
 #endif
+

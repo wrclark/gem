@@ -42,7 +42,7 @@ void request_parse(const char *uri, struct gem_uri *u) {
         return;
     }
 
-    if (!url_decode(uri, request, 1024) != 0) {
+    if ((!url_decode(uri, request, 1024)) != 0) {
         u->error |= REQUEST_ERR_TERM;
         printf("error decoding url: %s\n", uri);
         return;
@@ -217,3 +217,4 @@ void request_print_uri(struct gem_uri *u) {
            "error: %d\n\n",
            u->scheme, u->domain, u->port, u->path, u->error);
 }
+

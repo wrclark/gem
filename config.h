@@ -44,3 +44,4 @@ struct gem_config {
 int cfg_validate(struct gem_config *cfg);
 
 #endif
+

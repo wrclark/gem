@@ -92,7 +92,7 @@ static void iterate_dir(const char *path, SSL *ssl) {
         }
 
         sprintf(buffer, "%s%s", path, files[i]->d_name);
-        if (!url_encode(buffer, escaped, 2048) != 0) {
+        if ((!url_encode(buffer, escaped, 2048)) != 0) {
             fprintf(stderr, "unable to url_encode \"%s\"\n", buffer);
             goto EXIT;
         }
@@ -272,3 +272,4 @@ int resp_error(const char *code, SSL *ssl) {
     
     return write_ssl(ssl, buffer);
 }
+

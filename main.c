@@ -256,3 +256,4 @@ static void startup_check(void) {
         exit (1);
     }
 }
+

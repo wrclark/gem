@@ -93,3 +93,4 @@ const mime_t *mime_type(const char *path) {
 
     return mime_type_by_ext(ext);
 }
+
