@@ -9,7 +9,7 @@ CFLAGS = -std=c89 -O3 -W -Wall -Wextra -pedantic -I. -march=native -pipe -D_FORT
                 -Winline -Wswitch-enum -Wnull-dereference -Wfloat-equal -Wundef -Wbad-function-cast \
                 -Wcast-qual -Wold-style-definition -Wstrict-aliasing=2 -Wdouble-promotion \
                 -Wstack-protector -Werror -Wlogical-not-parentheses
-CLFAGS += -fanalyzer -Walloca -Walloc-zero -Wformat-overflow=2 -Wformat-signedness \
+CFLAGS += -fanalyzer -Walloca -Walloc-zero -Wformat-overflow=2 -Wformat-signedness \
                 -Wimplicit-fallthrough=5 -Wlogical-op -Wrestrict -Wunsafe-loop-optimizations \
                 -Wshadow=global -Wduplicated-cond -Wduplicated-branches \
                 -Wstrict-aliasing=3
