@@ -36,9 +36,12 @@ struct gem_config {
     char hostname[GEM_CFG_SIZ + 1];
     char docroot[GEM_CFG_SIZ + 1];
     char index[GEM_CFG_SIZ + 1];
+    char key_path[GEM_CFG_SIZ + 1];
+    char crt_path[GEM_CFG_SIZ + 1];
     int port;
     int enumerate;
     int diffhost;
+    int verbose;
 };
 
 int cfg_validate(struct gem_config *cfg);

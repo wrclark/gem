@@ -24,22 +24,32 @@ Last step is required for `chroot(2)` (or you can run as root/sudo)
 
 ### Program options
 ```
--h [HOSTNAME]   ex: -h "example.com"   (localhost default)
--p [PORT]       ex: -p 1965            (default)
--d [DOC ROOT]   ex: -d "/var/gemini"
--i [INDEX FILE] ex: -i "index.gmi"     (default)
+-k [pub key path]    ex: -h "gem.crt"     (tls/server.crt default)
+-c [priv key path]   ex: -h "gem.key"     (tls/server.key default)
+-h [HOSTNAME]        ex: -h "example.com" (localhost default)
+-p [PORT]            ex: -p 1965          (default)
+-d [DOC ROOT]        ex: -d "/var/gemini"
+-i [INDEX FILE]      ex: -i "index.gmi"   (default)
 -e  enumerate directories without an index file
 -a  permit requests with a different hostname
+-v  verbose: print request information
 ```
 
-Run with `./gem -d capsule -ae`
+Run with `./gem -d capsule -aev`
+
+### Run gem somewhere other than the git project
+The options `-c` for the certificate file (pub key) and `-k` for the private key can be used for this purpose.
+```sh
+# example setup
+$ ./projects/gemini/gem -aev -d ~/gemini/capsule -c server.crt -k secret.key
+```
 
 #### SSL cert
 To use your own domain name you have to replace `/CN=localhost` in the `ssl` make target to your domain: eg `example.com` => `/CN=example.com`.
 
 Then you must also specify the domain as the hostname when running the program:
 ```sh
-./gem -h "example.com" -d capsule -ae
+./gem -h "example.com" -d capsule -aev
 ```
 
 The `-a` flag can be useful for accessing the server over IP (perhaps over LAN) without a DNS name. The `-d` flag must always be specified.
@@ -80,7 +90,7 @@ $ sudo apt update && sudo apt install -y libssl-dev
 $ make ssl
 $ make
 $ sudo setcap cap_sys_chroot+ep gem
-$ ./gem -d capsule -ae
+$ ./gem -d capsule -aev
 ```
 
 ## Misc

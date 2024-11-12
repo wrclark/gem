@@ -32,12 +32,21 @@ int main(int argc, char *argv[]) {
     int opt, err;
     int hset = 0, dset = 0;
     int pset = 0, iset = 0;
+    int kset = 0, cset = 0;
 
     struct gem_uri uri = {0};
     char buffer[GEM_URI_MAXSIZ + 1] = {0};
 
-    while ((opt = getopt(argc, argv, "h:p:d:i:ea")) != -1) {
+    while ((opt = getopt(argc, argv, "k:c:h:p:d:i:eav")) != -1) {
         switch (opt) {
+            case 'k':
+                strncpy(cfg.key_path, optarg, GEM_CFG_SIZ);
+                kset = 1;
+                break;
+            case 'c':
+                strncpy(cfg.crt_path, optarg, GEM_CFG_SIZ);
+                cset = 1;
+                break;
             case 'h':
                 strncpy(cfg.hostname, optarg, GEM_CFG_SIZ);
                 hset = 1;
@@ -59,6 +68,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'a':
                 cfg.diffhost = 1;
+                break;
+            case 'v':
+                cfg.verbose = 1;
                 break;
             default:
                 usage(argv);
@@ -97,10 +109,13 @@ int main(int argc, char *argv[]) {
         usage(argv);
     }
 
-    /* chroot "/" to docroot */
-    if (chroot(cfg.docroot)) {
-        perror("unable to chroot docroot");
-        exit(1);
+    /* If not explicitly set when calling program, use defaults.. */
+    if (!kset) {
+        strcpy(cfg.key_path, PRIVATE_KEY_PATH);
+    }
+
+    if (!cset) {
+        strcpy(cfg.crt_path, PUBLIC_KEY_PATH);
     }
 
     /* check ssl/tls files */
@@ -156,6 +171,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (!fork()) {
+
             memset(buffer, 0, GEM_URI_MAXSIZ);
             memset(&uri, 0, sizeof (uri));
 
@@ -163,8 +179,8 @@ int main(int argc, char *argv[]) {
             ssl = SSL_new(ctx);
             SSL_set_fd(ssl, client);
 
-            SSL_use_certificate_chain_file(ssl, PUBLIC_KEY_PATH);
-            SSL_use_PrivateKey_file(ssl, PRIVATE_KEY_PATH, SSL_FILETYPE_PEM);
+            SSL_use_certificate_chain_file(ssl, cfg.crt_path);
+            SSL_use_PrivateKey_file(ssl, cfg.key_path, SSL_FILETYPE_PEM);
 
             if (SSL_accept(ssl) != 1) {
                 goto CLOSE_CONNECTION;
@@ -174,13 +190,23 @@ int main(int argc, char *argv[]) {
                 goto CLOSE_CONNECTION;
             }
 
-            printf("\ndata received: %s\n", buffer);
+            /* chroot "/" to docroot */
+            if (chroot(cfg.docroot)) {
+                perror("unable to chroot docroot");
+                goto CLOSE_CONNECTION;
+            }
+
+            if (chdir("/") != 0) {
+                goto CLOSE_CONNECTION;
+            }
+
+            if (cfg.verbose) printf("\ndata received: %s\n", buffer);
             
             request_parse(buffer, &uri);
-            request_print_uri(&uri);
+            if (cfg.verbose) request_print_uri(&uri);
 
             if (uri.error != 0) {
-                printf("(1) E=%d\n", uri.error);
+                if (cfg.verbose) printf("(1) E=%d\n", uri.error);
                 resp_error(RESP_STATUS_BAD_REQUEST, ssl);
                 goto CLOSE_CONNECTION;
             }
@@ -188,7 +214,7 @@ int main(int argc, char *argv[]) {
             request_validate_uri(&uri);
 
             if (uri.error != 0) {
-                printf("(2) E=%d\n", uri.error);
+                if (cfg.verbose) printf("(2) E=%d\n", uri.error);
                 switch (uri.error) {
                     case REQUEST_ERR_WRONG_SCHEME:
                     case REQUEST_ERR_WRONG_DOMAIN:
@@ -207,22 +233,22 @@ int main(int argc, char *argv[]) {
             if ((err = resp_serve_file(&uri, ssl))) {
                 switch(err) {
                     case RESP_FILE_NOT_FOUND:
-                        puts("file not found");
+                        if (cfg.verbose) puts("file not found");
                         resp_error(RESP_STATUS_NOT_FOUND, ssl);
                     break;
                     case RESP_FILE_TRANSFER:
-                        puts("file transfer failed");
+                        if (cfg.verbose) puts("file transfer failed");
                     break;
                     case RESP_FILE_PATH_TOO_LONG:
-                        puts("provided file path too long");
+                        if (cfg.verbose) puts("provided file path too long");
                         break;
                     default:
-                        printf("unknown error: %d\n", err);
+                        if (cfg.verbose) printf("unknown error: %d\n", err);
                 }
                 goto CLOSE_CONNECTION;
             }
 
-            puts("OK");
+            if (cfg.verbose) puts("OK");
 
 CLOSE_CONNECTION:
             SSL_shutdown(ssl);
@@ -240,19 +266,25 @@ CLOSE_CONNECTION:
 /* print usage and exit */
 static void usage(char *argv[]) {
     fprintf(stderr, "Usage:\n%s [OPTIONS]\n", argv[0]);
-    fprintf(stderr, "\t-h [HOSTNAME]   ex: -h \"example.com\"   (localhost default)\n");
-    fprintf(stderr, "\t-p [PORT]       ex: -p 1965            (default)\n");
-    fprintf(stderr, "\t-d [DOC ROOT]   ex: -d \"/var/gemini\"\n");
-    fprintf(stderr, "\t-i [INDEX FILE] ex: -i \"index.gmi\"     (default)\n");
+    fprintf(stderr, "\t-k [pub key path]    ex: -h \"gem.crt\"     (tls/server.crt default)\n");
+    fprintf(stderr, "\t-c [priv key path]   ex: -h \"gem.key\"     (tls/server.key default)\n");
+    fprintf(stderr, "\t-h [HOSTNAME]        ex: -h \"example.com\" (localhost default)\n");
+    fprintf(stderr, "\t-p [PORT]            ex: -p 1965          (default)\n");
+    fprintf(stderr, "\t-d [DOC ROOT]        ex: -d \"/var/gemini\"\n");
+    fprintf(stderr, "\t-i [INDEX FILE]      ex: -i \"index.gmi\"   (default)\n");
     fprintf(stderr, "\t-e  enumerate directories without an index file\n");
     fprintf(stderr, "\t-a  permit requests with a different hostname\n");
+    fprintf(stderr, "\t-v  verbose: print request information\n");
 
     exit(1);
 }
 
 static void startup_check(void) {
-    if (!file_exists(PUBLIC_KEY_PATH) || !file_exists(PRIVATE_KEY_PATH)) {
+
+    if (!file_exists(cfg.crt_path) || !file_exists(cfg.key_path)) {
         fprintf(stderr, "unable to find ssl keys\n");
+        fprintf(stderr, "Public key: %s\n", cfg.crt_path);
+        fprintf(stderr, "Private key: %s\n", cfg.key_path);
         exit (1);
     }
 }
