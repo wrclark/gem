@@ -266,15 +266,15 @@ CLOSE_CONNECTION:
 /* print usage and exit */
 static void usage(char *argv[]) {
     fprintf(stderr, "Usage:\n%s [OPTIONS]\n", argv[0]);
-    fprintf(stderr, "\t-k [pub key path]    ex: -h \"gem.crt\"     (tls/server.crt default)\n");
-    fprintf(stderr, "\t-c [priv key path]   ex: -h \"gem.key\"     (tls/server.key default)\n");
+    fprintf(stderr, "\t-c [pub cert path]   ex: -c \"gem.crt\"     (tls/server.crt default)\n");
+    fprintf(stderr, "\t-k [priv key path]   ex: -k \"gem.key\"     (tls/server.key default)\n");
     fprintf(stderr, "\t-h [HOSTNAME]        ex: -h \"example.com\" (localhost default)\n");
     fprintf(stderr, "\t-p [PORT]            ex: -p 1965          (default)\n");
     fprintf(stderr, "\t-d [DOC ROOT]        ex: -d \"/var/gemini\"\n");
     fprintf(stderr, "\t-i [INDEX FILE]      ex: -i \"index.gmi\"   (default)\n");
     fprintf(stderr, "\t-e  enumerate directories without an index file\n");
     fprintf(stderr, "\t-a  permit requests with a different hostname\n");
-    fprintf(stderr, "\t-v  verbose: print request information\n");
+    fprintf(stderr, "\t-v  print request information\n");
 
     exit(1);
 }

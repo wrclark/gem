@@ -24,15 +24,15 @@ Last step is required for `chroot(2)` (or you can run as root/sudo)
 
 ### Program options
 ```
--k [pub key path]    ex: -h "gem.crt"     (tls/server.crt default)
--c [priv key path]   ex: -h "gem.key"     (tls/server.key default)
+-c [pub cert path]   ex: -c "gem.crt"     (tls/server.crt default)
+-k [priv key path]   ex: -k "gem.key"     (tls/server.key default)
 -h [HOSTNAME]        ex: -h "example.com" (localhost default)
 -p [PORT]            ex: -p 1965          (default)
 -d [DOC ROOT]        ex: -d "/var/gemini"
 -i [INDEX FILE]      ex: -i "index.gmi"   (default)
 -e  enumerate directories without an index file
 -a  permit requests with a different hostname
--v  verbose: print request information
+-v  print request information
 ```
 
 Run with `./gem -d capsule -aev`
