@@ -21,6 +21,7 @@ struct gem_config cfg;
 
 static void usage(char *argv[]);
 static void startup_check(void);
+static void log_connection(int client_fd);
 
 int main(int argc, char *argv[]) {
     SSL_CTX *ctx;
@@ -160,6 +161,8 @@ int main(int argc, char *argv[]) {
 
         client = accept(fd, NULL, NULL);
 
+        log_connection(client);
+
         /* timeout on receive */
         if (setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof timeout) < 0) {
             perror("setsockopt(SO_RCVTIMEO)");
@@ -204,7 +207,7 @@ int main(int argc, char *argv[]) {
                 goto CLOSE_CONNECTION;
             }
 
-            if (cfg.verbose) printf("\ndata received: %s\n", buffer);
+            if (cfg.verbose) printf("data received: %s\n", buffer);
             
             request_parse(buffer, &uri);
             if (cfg.verbose) request_print_uri(&uri);
@@ -252,7 +255,7 @@ int main(int argc, char *argv[]) {
                 goto CLOSE_CONNECTION;
             }
 
-            if (cfg.verbose) puts("OK");
+            if (cfg.verbose) puts("OK\n");
 
 CLOSE_CONNECTION:
             SSL_shutdown(ssl);
@@ -291,5 +294,19 @@ static void startup_check(void) {
         fprintf(stderr, "Private key: %s\n", cfg.key_path);
         exit (1);
     }
+}
+
+static void log_connection(int client_fd) {
+    struct sockaddr_in client_addr;
+    socklen_t client_addr_len = sizeof(client_addr);
+    char client_ip[INET_ADDRSTRLEN];
+
+    if (getpeername(client_fd, (struct sockaddr *)&client_addr, &client_addr_len) == -1) {
+        return;
+    }
+
+    inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, sizeof(client_ip));
+    printf("Remote: %s\n", client_ip);
+
 }
 
