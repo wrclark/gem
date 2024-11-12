@@ -37,6 +37,10 @@ int main(int argc, char *argv[]) {
     struct gem_uri uri = {0};
     char buffer[GEM_URI_MAXSIZ + 1] = {0};
 
+    /* Force line-buffering */
+    setvbuf(stdout, NULL, _IOLBF, 0);
+    setvbuf(stderr, NULL, _IOLBF, 0);
+
     while ((opt = getopt(argc, argv, "k:c:h:p:d:i:eav")) != -1) {
         switch (opt) {
             case 'k':
