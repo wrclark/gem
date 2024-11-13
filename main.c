@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
     SSL *ssl;
     struct sockaddr_in addr;
     struct timeval timeout;
+    pid_t pid;
     int fd, client;
     int enable = 1;
     int opt, err;
@@ -161,7 +162,7 @@ int main(int argc, char *argv[]) {
 
         client = accept(fd, NULL, NULL);
 
-        log_connection(client);
+        if (cfg.verbose) log_connection(client);
 
         /* timeout on receive */
         if (setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof timeout) < 0) {
@@ -176,8 +177,9 @@ int main(int argc, char *argv[]) {
             close(client);
             continue;
         }
+        pid = fork();
 
-        if (!fork()) {
+        if (pid == 0) {
 
             memset(buffer, 0, GEM_URI_MAXSIZ);
             memset(&uri, 0, sizeof (uri));
@@ -186,20 +188,28 @@ int main(int argc, char *argv[]) {
             ssl = SSL_new(ctx);
             SSL_set_fd(ssl, client);
 
-            SSL_use_certificate_chain_file(ssl, cfg.crt_path);
-            SSL_use_PrivateKey_file(ssl, cfg.key_path, SSL_FILETYPE_PEM);
+            if (SSL_use_certificate_chain_file(ssl, cfg.crt_path) != 1) {
+                perror("SSL_use_certificate_chain_file");
+                goto CLOSE_CONNECTION;
+            }
+            if (SSL_use_PrivateKey_file(ssl, cfg.key_path, SSL_FILETYPE_PEM) != 1) {
+                perror("SSL_use_PrivateKey_file");
+                goto CLOSE_CONNECTION;
+            }
 
             if (SSL_accept(ssl) != 1) {
+                perror("SSL_accept");
                 goto CLOSE_CONNECTION;
             }
             
             if (SSL_read(ssl, buffer, GEM_URI_MAXSIZ) <= 0) {
+                perror("SSL_read");
                 goto CLOSE_CONNECTION;
             }
 
             /* chroot "/" to docroot */
             if (chroot(cfg.docroot)) {
-                perror("unable to chroot docroot");
+                perror("chroot");
                 goto CLOSE_CONNECTION;
             }
 
@@ -263,6 +273,9 @@ CLOSE_CONNECTION:
             SSL_CTX_free(ctx);
             close(client);
             _exit(0);
+        } else if (pid == -1) {
+            perror("fork");
+            exit(1);
         }
     }
 
@@ -296,6 +309,7 @@ static void startup_check(void) {
     }
 }
 
+/* log remote ipv4 */
 static void log_connection(int client_fd) {
     struct sockaddr_in client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
@@ -307,6 +321,5 @@ static void log_connection(int client_fd) {
 
     inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, sizeof(client_ip));
     printf("Remote: %s\n", client_ip);
-
 }
 
