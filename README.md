@@ -120,3 +120,5 @@ Test gemini client:
 ```sh
 echo "gemini://localhost" | openssl s_client -quiet -crlf -connect localhost:1965
 ```
+
+This project is licensed under the terms of the GNU General Public License v2.0.
