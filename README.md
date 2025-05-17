@@ -1,5 +1,7 @@
 # gem
 
+Running on `gemini://gemmy.dev/`
+
 > gemini server with TLS and script for generating working TLS certs
 
 Supports 
